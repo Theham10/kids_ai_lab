@@ -10,6 +10,13 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
         { id: 5, name: "상상력 대장", icon: "🧠", color: "#6BCB77", achieved: true },
     ];
 
+    const characterMap: Record<string, string> = {
+        stella: "✨",
+        leo: "🦁",
+        pinky: "🦄",
+        bolt: "🤖"
+    };
+
     return (
         <div className="card" style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
             <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "2rem" }}>
@@ -24,11 +31,13 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
                 style={{ marginBottom: "3rem" }}
             >
                 <div style={{ position: "relative", display: "inline-block" }}>
-                    <img
-                        src="/mascot.png"
-                        alt="Hero Avatar"
-                        style={{ width: "150px", height: "150px", borderRadius: "50%", border: "8px solid white", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-                    />
+                    <div style={{
+                        width: "150px", height: "150px", borderRadius: "50%", background: "white",
+                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: "5rem",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.1)", border: "8px solid #f1f2f6"
+                    }}>
+                        {characterMap[user.character || "stella"]}
+                    </div>
                     <div style={{
                         position: "absolute", bottom: 0, right: 0,
                         background: "linear-gradient(45deg, #FFD700, #FFA500)",
@@ -38,7 +47,7 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
                         LV. 99 👑
                     </div>
                 </div>
-                <h2 style={{ fontSize: "2.5rem", marginTop: "1.5rem", color: "#2d3436" }}>{user.name} 히어로</h2>
+                <h2 style={{ fontSize: "2.5rem", marginTop: "1.5rem", color: "#2d3436" }}>{user.name} & {user.characterName || "스텔라"}</h2>
                 <p style={{ color: "#636e72", fontSize: "1.2rem" }}>세상을 아름답게 바꾸는 꼬마 마술사 ✨</p>
             </motion.div>
 

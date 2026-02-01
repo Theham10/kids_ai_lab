@@ -63,7 +63,7 @@ export default function MagicCanvas({
                     setTimeout(() => {
                         const uniqueSeed = Date.now() + Math.floor(Math.random() * 1000000);
                         const newImg = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=1024&height=1024&nologo=true&seed=${uniqueSeed}&enhance=true`;
-                        setImage(newImg);
+                        setImageUrl(newImg);
                         setStatus("done");
                         onSaveToGallery(newImg);
                         onDecrementCredits();
@@ -183,7 +183,7 @@ export default function MagicCanvas({
                     {status === "done" && !isOutOfCredits && (
                         <button
                             className="button"
-                            onClick={() => { setIdea(""); setImage(null); setStatus("idle"); }}
+                            onClick={() => { setIdea(""); setImageUrl(null); setStatus("idle"); }}
                             style={{ flex: "none", padding: "0.8rem 1.5rem", justifyContent: "center", background: "#f1f2f6", color: "#666", fontSize: "1rem" }}
                         >
                             새로 시작 🆕
@@ -236,7 +236,7 @@ export default function MagicCanvas({
                     </motion.div>
                 )}
 
-                {image && status === "done" && (
+                {imageUrl && status === "done" && (
                     <motion.div
                         key="result"
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -244,9 +244,9 @@ export default function MagicCanvas({
                         style={{ textAlign: "center", marginTop: "2rem" }}
                     >
                         <img
-                            src={image}
+                            src={imageUrl}
                             alt="Generated Art"
-                            onClick={() => setLightboxImg(image)}
+                            onClick={() => setLightboxImg(imageUrl)}
                             style={{
                                 maxWidth: "100%",
                                 borderRadius: "32px",

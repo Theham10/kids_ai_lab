@@ -11,6 +11,7 @@ export type UserProfile = {
     tier: "Free" | "Pro";
     credits: number;
     character?: string;
+    characterName?: string;
 };
 
 const inputStyle = {
@@ -50,6 +51,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [gender, setGender] = useState("");
     const [referral, setReferral] = useState("");
     const [selectedCharacter, setSelectedCharacter] = useState("stella");
+    const [characterName, setCharacterName] = useState("");
+    const [joinStep, setJoinStep] = useState(1);
     const [mode, setMode] = useState<"choose" | "login" | "join">("choose");
 
     const handleLogin = () => {
@@ -67,7 +70,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     };
 
     const handleJoin = () => {
-        if (!name || !email || !age || !gender) return alert("모든 정보를 입력해야 기록장에 이름을 올릴 수 있어! ✨");
+        if (!name || !email || !age || !gender || !characterName) return alert("단짝 친구의 이름까지 지어줘야 모험을 떠날 수 있어! ✨");
 
         onLogin({
             id: "new-" + Math.random().toString(36).substr(2, 9),
@@ -77,7 +80,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             gender,
             tier: "Free",
             credits: referral ? 4 : 3,
-            character: selectedCharacter
+            character: selectedCharacter,
+            characterName: characterName
         });
 
         if (referral) {
@@ -164,82 +168,118 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
                 {mode === "join" && (
                     <>
-                        <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>새로운 히어로 등록</h1>
-                        <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1.5rem" }}>너를 마법 연구소에 알고 싶어!</p>
-                        <div style={{ textAlign: "left" }}>
-                            <label style={labelStyle}>이름</label>
-                            <input type="text" placeholder="너의 이름을 입력해" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+                        {joinStep === 1 ? (
+                            <>
+                                <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>새로운 히어로 등록</h1>
+                                <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1.5rem" }}>너를 마법 연구소에 알고 싶어!</p>
+                                <div style={{ textAlign: "left" }}>
+                                    <label style={labelStyle}>이름</label>
+                                    <input type="text" placeholder="너의 이름을 입력해" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
 
-                            <label style={labelStyle}>이메일 (부모님 메일도 좋아!)</label>
-                            <input type="email" placeholder="example@magic.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+                                    <label style={labelStyle}>이메일 (부모님 메일도 좋아!)</label>
+                                    <input type="email" placeholder="example@magic.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
 
-                            <div style={{ display: "flex", gap: "1rem" }}>
-                                <div style={{ flex: 1 }}>
-                                    <label style={labelStyle}>나이</label>
-                                    <input type="number" placeholder="7" value={age} onChange={(e) => setAge(e.target.value)} style={inputStyle} />
+                                    <div style={{ display: "flex", gap: "1rem" }}>
+                                        <div style={{ flex: 1 }}>
+                                            <label style={labelStyle}>나이</label>
+                                            <input type="number" placeholder="7" value={age} onChange={(e) => setAge(e.target.value)} style={inputStyle} />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <label style={labelStyle}>성별</label>
+                                            <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
+                                                <option value="">선택</option>
+                                                <option value="male">남자아이</option>
+                                                <option value="female">여자아이</option>
+                                                <option value="secret">비밀!</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: "0.5rem", padding: "1rem", background: "rgba(108, 92, 231, 0.05)", borderRadius: "16px", border: "1px dashed #A29BFE", marginBottom: "1.5rem", textAlign: "left" }}>
+                                        <label style={{ ...labelStyle, color: "#6C5CE7", fontSize: "0.8rem", marginBottom: "0.5rem" }}>🎁 친구 추천 코드 (보너스 +1 💎)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="친구의 이름을 입력해줘 ✨"
+                                            value={referral}
+                                            onChange={(e) => setReferral(e.target.value)}
+                                            style={{ ...inputStyle, marginBottom: 0, borderColor: "#A29BFE" }}
+                                        />
+                                    </div>
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                    <label style={labelStyle}>성별</label>
-                                    <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
-                                        <option value="">선택</option>
-                                        <option value="male">남자아이</option>
-                                        <option value="female">여자아이</option>
-                                        <option value="secret">비밀!</option>
-                                    </select>
-                                </div>
-                            </div>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="button"
+                                    style={{ ...buttonStyle, background: "linear-gradient(45deg, #A29BFE, #6C5CE7)" }}
+                                    onClick={() => {
+                                        if (!name || !email || !age || !gender) return alert("모든 정보를 알려줘야 다음 마법으로 넘어갈 수 있어! ✨");
+                                        setJoinStep(2);
+                                    }}
+                                >
+                                    단짝 친구 선택하러 가기! →
+                                </motion.button>
+                            </>
+                        ) : (
+                            <>
+                                <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>나만의 단짝 친구 매칭</h1>
+                                <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1.5rem" }}>같이 모험을 떠날 친구를 고르고 이름도 지어줘!</p>
 
-                            <label style={labelStyle}>🌟 같이 모험할 단짝 친구 선택</label>
-                            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", justifyContent: "space-between" }}>
-                                {[
-                                    { id: "stella", name: "스텔라", emoji: "✨" },
-                                    { id: "leo", name: "레오", emoji: "🦁" },
-                                    { id: "pinky", name: "핑키", emoji: "🦄" },
-                                    { id: "bolt", name: "볼트", emoji: "🤖" }
-                                ].map(char => (
-                                    <motion.div
-                                        key={char.id}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => setSelectedCharacter(char.id)}
-                                        style={{
-                                            flex: 1,
-                                            padding: "0.8rem 0.2rem",
-                                            borderRadius: "16px",
-                                            border: `2px solid ${selectedCharacter === char.id ? "#6C5CE7" : "#eee"}`,
-                                            background: selectedCharacter === char.id ? "rgba(108, 92, 231, 0.1)" : "white",
-                                            cursor: "pointer",
-                                            textAlign: "center"
-                                        }}
+                                <div style={{ textAlign: "left" }}>
+                                    <label style={labelStyle}>단짝 친구의 마법 이름</label>
+                                    <input
+                                        type="text"
+                                        placeholder="예: 반짝이, 우주대장, 초코"
+                                        value={characterName}
+                                        onChange={(e) => setCharacterName(e.target.value)}
+                                        style={{ ...inputStyle, border: "3px solid #6C5CE7", background: "white" }}
+                                    />
+
+                                    <label style={labelStyle}>🌟 함께할 친구 고르기</label>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
+                                        {[
+                                            { id: "stella", name: "스텔라", emoji: "✨", desc: "빛나는 마법 요정" },
+                                            { id: "leo", name: "레오", emoji: "🦁", desc: "용감한 아기 사자" },
+                                            { id: "pinky", name: "핑키", emoji: "🦄", desc: "꿈꾸는 유니콘" },
+                                            { id: "bolt", name: "볼트", emoji: "🤖", desc: "똑똑한 로봇 친구" }
+                                        ].map(char => (
+                                            <motion.div
+                                                key={char.id}
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => setSelectedCharacter(char.id)}
+                                                style={{
+                                                    padding: "1rem",
+                                                    borderRadius: "20px",
+                                                    border: `3px solid ${selectedCharacter === char.id ? "#6C5CE7" : "#eee"}`,
+                                                    background: selectedCharacter === char.id ? "rgba(108, 92, 231, 0.1)" : "white",
+                                                    cursor: "pointer",
+                                                    textAlign: "center",
+                                                    boxShadow: selectedCharacter === char.id ? "0 10px 20px rgba(108,92,231,0.15)" : "none"
+                                                }}
+                                            >
+                                                <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{char.emoji}</div>
+                                                <div style={{ fontSize: "1rem", fontWeight: "bold", color: "#2d3436" }}>{char.name}</div>
+                                                <div style={{ fontSize: "0.7rem", color: "#999" }}>{char.desc}</div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: "flex", gap: "1rem" }}>
+                                    <button onClick={() => setJoinStep(1)} style={{ flex: 1, background: "#f1f2f6", color: "#666", border: "none", borderRadius: "16px", padding: "1rem" }}>뒤로</button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="button"
+                                        style={{ ...buttonStyle, flex: 2, background: "linear-gradient(45deg, #6BCB77, #2ecc71)", marginTop: 0 }}
+                                        onClick={handleJoin}
                                     >
-                                        <div style={{ fontSize: "1.5rem", marginBottom: "0.3rem" }}>{char.emoji}</div>
-                                        <div style={{ fontSize: "0.75rem", fontWeight: "bold", color: selectedCharacter === char.id ? "#6C5CE7" : "#999" }}>{char.name}</div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(108, 92, 231, 0.05)", borderRadius: "16px", border: "1px dashed #A29BFE", marginBottom: "1.5rem", textAlign: "left" }}>
-                            <label style={{ ...labelStyle, color: "#6C5CE7", fontSize: "0.8rem", marginBottom: "0.5rem" }}>🎁 친구 추천 코드 (보너스 +1 💎)</label>
-                            <input
-                                type="text"
-                                placeholder="친구의 이름을 입력해줘 ✨"
-                                value={referral}
-                                onChange={(e) => setReferral(e.target.value)}
-                                style={{ ...inputStyle, marginBottom: 0, borderColor: "#A29BFE" }}
-                            />
-                        </div>
-
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="button"
-                            style={{ ...buttonStyle, background: "linear-gradient(45deg, #6BCB77, #2ecc71)" }}
-                            onClick={handleJoin}
-                        >
-                            가입하고 시작하기! ✨
-                        </motion.button>
-                        <button onClick={() => setMode("choose")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>돌아가기</button>
+                                        모험 시작하기! 🚀
+                                    </motion.button>
+                                </div>
+                            </>
+                        )}
+                        <button onClick={() => { setMode("choose"); setJoinStep(1); }} style={{ background: "none", border: "none", color: "#999", marginTop: "1.5rem", cursor: "pointer" }}>돌아가기</button>
                     </>
                 )}
 
