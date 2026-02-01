@@ -10,6 +10,7 @@ export type UserProfile = {
     gender?: string;
     tier: "Free" | "Pro";
     credits: number;
+    character?: string;
 };
 
 const inputStyle = {
@@ -48,6 +49,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
     const [referral, setReferral] = useState("");
+    const [selectedCharacter, setSelectedCharacter] = useState("stella");
     const [mode, setMode] = useState<"choose" | "login" | "join">("choose");
 
     const handleLogin = () => {
@@ -75,6 +77,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             gender,
             tier: "Free",
             credits: referral ? 4 : 3,
+            character: selectedCharacter
         });
 
         if (referral) {
@@ -184,6 +187,35 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                         <option value="secret">비밀!</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <label style={labelStyle}>🌟 같이 모험할 단짝 친구 선택</label>
+                            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", justifyContent: "space-between" }}>
+                                {[
+                                    { id: "stella", name: "스텔라", emoji: "✨" },
+                                    { id: "leo", name: "레오", emoji: "🦁" },
+                                    { id: "pinky", name: "핑키", emoji: "🦄" },
+                                    { id: "bolt", name: "볼트", emoji: "🤖" }
+                                ].map(char => (
+                                    <motion.div
+                                        key={char.id}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setSelectedCharacter(char.id)}
+                                        style={{
+                                            flex: 1,
+                                            padding: "0.8rem 0.2rem",
+                                            borderRadius: "16px",
+                                            border: `2px solid ${selectedCharacter === char.id ? "#6C5CE7" : "#eee"}`,
+                                            background: selectedCharacter === char.id ? "rgba(108, 92, 231, 0.1)" : "white",
+                                            cursor: "pointer",
+                                            textAlign: "center"
+                                        }}
+                                    >
+                                        <div style={{ fontSize: "1.5rem", marginBottom: "0.3rem" }}>{char.emoji}</div>
+                                        <div style={{ fontSize: "0.75rem", fontWeight: "bold", color: selectedCharacter === char.id ? "#6C5CE7" : "#999" }}>{char.name}</div>
+                                    </motion.div>
+                                ))}
                             </div>
                         </div>
 

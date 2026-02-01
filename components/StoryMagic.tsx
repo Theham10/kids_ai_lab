@@ -9,6 +9,10 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const [currentPage, setCurrentPage] = useState(0);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
+    const API_BASE = typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+        ? ""
+        : "https://stella-magic.vercel.app";
+
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
     const generateStory = async () => {
@@ -19,7 +23,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
         setCurrentPage(0);
 
         try {
-            const response = await fetch("/api/generate-story", {
+            const response = await fetch(`${API_BASE}/api/generate-story`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt, userName: user.name })

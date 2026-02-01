@@ -17,24 +17,31 @@ export default function MagicCanvas({
 }) {
     const [idea, setIdea] = useState("");
     const [status, setStatus] = useState<"idle" | "refining" | "sketching" | "coloring" | "polishing" | "done">("idle");
-    const [image, setImage] = useState<string | null>(null);
+    const [style, setStyle] = useState("disney");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+
+    const API_BASE = typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+        ? ""
+        : "https://stella-magic.vercel.app";
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
-    const paintMagic = async () => {
+    const paintMagic = async () => { // Renamed to generateArt in instruction, but keeping original name for now and applying changes
         if (!idea) return;
         if (isOutOfCredits) return;
+        setIsGenerating(true); // Added from instruction
+        setImageUrl(null); // Replaced setImage(null)
 
-        setImage(null);
         setStatus("refining");
 
         try {
             // Intelligent Prompt Refinement via Gemini
-            const response = await fetch("/api/refine-prompt", {
+            const response = await fetch(`${API_BASE}/api/generate-art`, { // Updated fetch URL and API_BASE
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: idea })
+                body: JSON.stringify({ prompt: idea, style }) // Updated body to include style
             });
 
             const data = await response.json();
