@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KidGenius AI - Magic Lab",
-  description: "A safe and creative AI playground for kids ages 6-13",
+  title: "KidGenius AI - 스텔라의 마법 연구소 🚀",
+  description: "아이들의 상상을 디즈니 영화처럼 그려내는 세상에서 가장 똑똑한 AI 놀이터",
 };
 
 export default function RootLayout({

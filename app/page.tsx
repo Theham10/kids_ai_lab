@@ -14,8 +14,18 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const savedGallery = localStorage.getItem("magic_gallery");
+    if (savedGallery) {
+      setGallery(JSON.parse(savedGallery));
+    }
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (gallery.length > 0) {
+      localStorage.setItem("magic_gallery", JSON.stringify(gallery));
+    }
+  }, [gallery]);
 
   if (!mounted) return null;
 
@@ -40,7 +50,7 @@ export default function Home() {
 
   const renderView = () => {
     switch (view) {
-      case "story": return <StoryMagic onBack={handleBack} />;
+      case "story": return <StoryMagic onBack={handleBack} user={user} />;
       case "draw": return <MagicCanvas onBack={handleBack} user={user} onSaveToGallery={addToGallery} gallery={gallery} />;
       case "motion": return <MagicMotion onBack={handleBack} user={user} gallery={gallery} />;
       case "hero": return <HeroCenter onBack={handleBack} user={user} />;
