@@ -8,7 +8,9 @@ export default function Settings({ onBack, user, onUpdateUser }: {
     user: any,
     onUpdateUser: (updatedUser: any) => void
 }) {
-    const [showParentalGate, setShowParentalGate] = useState(true);
+    // Master/Admin accounts skip parental gate
+    const isMaster = user.tier === "Pro" && user.credits === 9999;
+    const [showParentalGate, setShowParentalGate] = useState(!isMaster);
     const [name, setName] = useState(user.name);
     const [characterName, setCharacterName] = useState(user.characterName);
     const [character, setCharacter] = useState(user.character);
