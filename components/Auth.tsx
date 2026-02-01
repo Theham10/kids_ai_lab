@@ -186,6 +186,18 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 </div>
                             </div>
                         </div>
+
+                        <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(108, 92, 231, 0.05)", borderRadius: "16px", border: "1px dashed #A29BFE", marginBottom: "1.5rem", textAlign: "left" }}>
+                            <label style={{ ...labelStyle, color: "#6C5CE7", fontSize: "0.8rem", marginBottom: "0.5rem" }}>🎁 친구 추천 코드 (보너스 +1 💎)</label>
+                            <input
+                                type="text"
+                                placeholder="친구의 이름을 입력해줘 ✨"
+                                value={referral}
+                                onChange={(e) => setReferral(e.target.value)}
+                                style={{ ...inputStyle, marginBottom: 0, borderColor: "#A29BFE" }}
+                            />
+                        </div>
+
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
