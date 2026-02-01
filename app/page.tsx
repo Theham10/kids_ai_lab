@@ -37,6 +37,14 @@ export default function Home() {
     }
   }, [gallery]);
 
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("magic_user", JSON.stringify(user));
+    } else if (mounted) {
+      localStorage.removeItem("magic_user");
+    }
+  }, [user, mounted]);
+
   if (!mounted) return null;
 
   if (!user) {
@@ -48,10 +56,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
           >
-            <Auth onLogin={(u) => {
-              setUser(u);
-              localStorage.setItem("magic_user", JSON.stringify(u));
-            }} />
+            <Auth onLogin={(u) => setUser(u)} />
           </motion.div>
         </AnimatePresence>
       </main>
@@ -71,7 +76,6 @@ export default function Home() {
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem("magic_user");
   };
 
   const renderView = () => {
