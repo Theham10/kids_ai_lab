@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -17,10 +17,26 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            safetySettings: [
+                { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            ]
+        });
 
         const systemPrompt = `You are a professional Disney/Pixar storyteller and child development expert.
-        Your job is to write a magical, heartwarming, and deeply EDUCATIONAL 4-chapter story for children in KOREAN.
+        Your job is to write a magical, heartwarming, and deeply EDUCATIONAL 4-chapter story for children (ages 6-12) in KOREAN.
+        
+        CRITICAL SAFETY RULES:
+        - NEVER include violence, scary content, or adult themes
+        - NEVER mention real people, brands, or copyrighted characters
+        - ALWAYS focus on positive values: kindness, honesty, courage, empathy, sharing
+        - Stories MUST be appropriate for young children
+        
+        The stories must go beyond simple entertainment and provide meaningful life lessons (인성 교육, 교훈).
         
         The stories must go beyond simple entertainment and provide meaningful life lessons (인성 교육, 교훈).
         

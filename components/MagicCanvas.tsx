@@ -174,15 +174,12 @@ export default function MagicCanvas({
                     </button>
                     {isOutOfCredits && (
                         <div style={{
-                            background: "#FFF4E5", border: "2px solid #FFAD33", padding: "1rem 1.5rem", borderRadius: "20px",
-                            display: "flex", alignItems: "center", gap: "1rem", flex: 1
+                            background: "#FFF4E5", border: "2px solid #FFAD33", padding: "1.5rem", borderRadius: "20px",
+                            textAlign: "center", flex: 1
                         }}>
-                            <span style={{ fontSize: "1.2rem" }}>💎</span>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: "bold", color: "#663C00" }}>마법 에너지가 바닥났어!</div>
-                                <div style={{ fontSize: "0.85rem", color: "#663C00" }}>프로 마술사가 되어 무제한으로 그려볼까?</div>
-                            </div>
-                            <button className="button" style={{ background: "#FFAD33", padding: "0.5rem 1rem", fontSize: "0.9rem" }}>프로 업그레이드 ($49)</button>
+                            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>✨</div>
+                            <div style={{ fontWeight: "bold", color: "#663C00", fontSize: "1.1rem", marginBottom: "0.5rem" }}>오늘의 마법은 여기까지!</div>
+                            <div style={{ fontSize: "0.95rem", color: "#663C00" }}>더 만들고 싶으면 부모님께 말씀드려요 🙋</div>
                         </div>
                     )}
                     {status === "done" && !isOutOfCredits && (

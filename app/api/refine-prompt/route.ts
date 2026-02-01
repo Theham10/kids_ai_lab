@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -18,10 +18,24 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            safetySettings: [
+                { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            ]
+        });
 
         const systemPrompt = `You are a professional Disney/Pixar artistic prompt engineer. 
         Your job is to transform simple Korean descriptions from children into highly detailed, incredibly cute, 3D Pixar Disney style English prompts for image generation.
+        
+        CRITICAL SAFETY RULES:
+        - NEVER create prompts with violence, weapons, or scary content
+        - NEVER include adult themes or inappropriate suggestions
+        - ALWAYS keep prompts child-friendly and wholesome
+        - Focus on: cute animals, magical landscapes, friendly characters, colorful scenes
         
         Refinement Rules:
         1. Always focus on adorable baby animals (even if not specified, make subjects youthful and cute).

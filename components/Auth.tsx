@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ParentalGate from "./ParentalGate";
 
 export type UserProfile = {
     id: string;
@@ -66,6 +67,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [selectedCharacter, setSelectedCharacter] = useState("stella");
     const [characterName, setCharacterName] = useState("");
     const [mode, setMode] = useState<"landing" | "avatar_setup" | "choose" | "login" | "join">("landing");
+    const [showParentalGate, setShowParentalGate] = useState(false);
 
     const handleLogin = () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
@@ -261,7 +263,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                     whileHover={{ scale: 1.02 }}
                                     className="button"
                                     style={{ ...buttonStyle, background: "#6C5CE7" }}
-                                    onClick={() => setMode("join")}
+                                    onClick={() => setShowParentalGate(true)}
                                 >
                                     기록장에 저장하고 모험 시작! ✨
                                 </motion.button>
@@ -333,6 +335,16 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {showParentalGate && (
+                    <ParentalGate
+                        onSuccess={() => {
+                            setShowParentalGate(false);
+                            setMode("join");
+                        }}
+                        onCancel={() => setShowParentalGate(false)}
+                    />
+                )}
 
                 <p style={{ marginTop: "2rem", fontSize: "0.85rem", opacity: 0.5, color: "#666" }}>
                     세상의 모든 어린이를 위한 안전하고 가치 있는 AI 연구소
