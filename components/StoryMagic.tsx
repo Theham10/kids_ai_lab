@@ -9,9 +9,9 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const [currentPage, setCurrentPage] = useState(0);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
-    const API_BASE = typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+    const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
         ? ""
-        : "https://stella-magic.vercel.app";
+        : "https://kids-ai-lab.vercel.app";
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 

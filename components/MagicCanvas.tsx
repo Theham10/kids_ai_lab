@@ -22,9 +22,9 @@ export default function MagicCanvas({
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
-    const API_BASE = typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+    const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
         ? ""
-        : "https://stella-magic.vercel.app";
+        : "https://kids-ai-lab.vercel.app";
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
