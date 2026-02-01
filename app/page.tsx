@@ -14,6 +14,16 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Session Recovery
+    const savedUser = localStorage.getItem("magic_user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Session recovery failed", e);
+      }
+    }
+
     const savedGallery = localStorage.getItem("magic_gallery");
     if (savedGallery) {
       setGallery(JSON.parse(savedGallery));
@@ -56,6 +66,11 @@ export default function Home() {
     }
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("magic_user");
+  };
+
   const renderView = () => {
     switch (view) {
       case "story": return <StoryMagic onBack={handleBack} user={user} onDecrementCredits={decrementCredits} />;
@@ -92,7 +107,7 @@ export default function Home() {
               background: "white",
               color: "#666",
               border: "2px solid #eee"
-            }} onClick={() => setUser(null)}>Logout</button>
+            }} onClick={handleLogout}>Logout</button>
           </nav>
 
           <header style={{ textAlign: "center", marginBottom: "5rem" }}>

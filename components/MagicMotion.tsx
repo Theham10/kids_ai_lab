@@ -125,7 +125,12 @@ export default function MagicMotion({
 
     return (
         <div className="card" style={{ maxWidth: "1000px", margin: "0 auto", border: "5px solid #A29BFE", position: "relative" }}>
-            <button onClick={onBack} className="button" style={{ background: "none", boxShadow: "none", color: "#666", padding: 0, marginBottom: "1rem" }}>
+            <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); onBack(); }}
+                className="button"
+                style={{ background: "none", boxShadow: "none", color: "#666", padding: 0, marginBottom: "1rem" }}
+            >
                 ← 돌아가기
             </button>
 

@@ -115,7 +115,12 @@ export default function MagicCanvas({
             </AnimatePresence>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                <button onClick={onBack} className="button" style={{ background: "none", boxShadow: "none", color: "#666", padding: 0 }}>
+                <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); onBack(); }}
+                    className="button"
+                    style={{ background: "none", boxShadow: "none", color: "#666", padding: 0 }}
+                >
                     ← 돌아가기
                 </button>
                 <div style={{ display: "flex", gap: "10px" }}>

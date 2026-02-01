@@ -61,7 +61,12 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
 
     return (
         <div className="card" style={{ maxWidth: "800px", margin: "0 auto" }}>
-            <button onClick={onBack} className="button" style={{ background: "none", boxShadow: "none", color: "#666", padding: 0, marginBottom: "1rem" }}>
+            <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); onBack(); }}
+                className="button"
+                style={{ background: "none", boxShadow: "none", color: "#666", padding: 0, marginBottom: "1rem" }}
+            >
                 ← 돌아가기
             </button>
 
