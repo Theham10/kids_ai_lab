@@ -17,28 +17,27 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [email, setEmail] = useState("");
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
-    const [showRegister, setShowRegister] = useState(false);
+    const [mode, setMode] = useState<"choose" | "login" | "join">("choose");
 
-    const handleNext = () => {
-        if (!name) return alert("반가워! 이름을 알려줄래? 😊");
+    const handleLogin = () => {
+        if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
 
         const adminNames = ["스텔라", "stella"];
-        if (adminNames.includes(name.toLowerCase())) {
-            return onLogin({
-                id: "admin-" + Math.random().toString(36).substr(2, 5),
-                name,
-                tier: "Pro",
-                credits: 9999,
-            });
-        }
-        setShowRegister(true);
-    };
-
-    const handleRegister = () => {
-        if (!email || !age || !gender) return alert("모든 정보를 입력해야 기록장에 이름을 올릴 수 있어! ✨");
+        const isAdmin = adminNames.includes(name.toLowerCase());
 
         onLogin({
-            id: Math.random().toString(36).substr(2, 9),
+            id: isAdmin ? "admin-" + Math.random().toString(36).substr(2, 5) : "user-" + Math.random().toString(36).substr(2, 5),
+            name,
+            tier: isAdmin ? "Pro" : "Free",
+            credits: isAdmin ? 9999 : 3,
+        });
+    };
+
+    const handleJoin = () => {
+        if (!name || !email || !age || !gender) return alert("모든 정보를 입력해야 기록장에 이름을 올릴 수 있어! ✨");
+
+        onLogin({
+            id: "new-" + Math.random().toString(36).substr(2, 9),
             name,
             email,
             age,
@@ -73,35 +72,68 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                     />
                 </div>
 
-                {!showRegister ? (
+                {mode === "choose" && (
                     <>
-                        <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>마법 연구소 입장</h1>
-                        <p style={{ fontSize: "1rem", color: "#666", marginBottom: "2rem" }}>누가 연구소를 찾아왔을까?</p>
+                        <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>마법 연구소</h1>
+                        <p style={{ fontSize: "1rem", color: "#666", marginBottom: "2rem" }}>세상에서 가장 똑똑한 AI 놀이터!</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="button"
+                                style={{ ...buttonStyle, background: "#6C5CE7" }}
+                                onClick={() => setMode("login")}
+                            >
+                                로그인하기 🗝️
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="button"
+                                style={{ ...buttonStyle, background: "white", color: "#6C5CE7", border: "2px solid #6C5CE7" }}
+                                onClick={() => setMode("join")}
+                            >
+                                회원가입하기 ✨
+                            </motion.button>
+                        </div>
+                    </>
+                )}
+
+                {mode === "login" && (
+                    <>
+                        <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>다시 만나서 반가워!</h1>
+                        <p style={{ fontSize: "1rem", color: "#666", marginBottom: "2rem" }}>누구인지 알려줄래?</p>
                         <input
                             type="text"
-                            placeholder="이름을 입력해줘 (예: 민준)"
+                            placeholder="너의 이름을 입력해"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             style={inputStyle}
-                            onKeyPress={(e) => e.key === 'Enter' && handleNext()}
+                            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                         />
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             className="button"
                             style={buttonStyle}
-                            onClick={handleNext}
+                            onClick={handleLogin}
                         >
-                            다음 단계로! 🪄
+                            로그인 완료! 🪄
                         </motion.button>
+                        <button onClick={() => setMode("choose")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>처음으로 돌아가기</button>
                     </>
-                ) : (
+                )}
+
+                {mode === "join" && (
                     <>
-                        <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>꼬마 히어로 기록장</h1>
-                        <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1.5rem" }}>너에 대해 조금 더 알고 싶어!</p>
+                        <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>새로운 히어로 등록</h1>
+                        <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1.5rem" }}>너를 마법 연구소에 알고 싶어!</p>
                         <div style={{ textAlign: "left" }}>
+                            <label style={labelStyle}>이름</label>
+                            <input type="text" placeholder="너의 이름을 입력해" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+
                             <label style={labelStyle}>이메일 (부모님 메일도 좋아!)</label>
-                            <input type="email" placeholder="hello@magic.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+                            <input type="email" placeholder="example@magic.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
 
                             <div style={{ display: "flex", gap: "1rem" }}>
                                 <div style={{ flex: 1 }}>
@@ -111,10 +143,10 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 <div style={{ flex: 1 }}>
                                     <label style={labelStyle}>성별</label>
                                     <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
-                                        <option value="">선택해줘</option>
+                                        <option value="">선택</option>
                                         <option value="male">남자아이</option>
                                         <option value="female">여자아이</option>
-                                        <option value="secret">비밀이야!</option>
+                                        <option value="secret">비밀!</option>
                                     </select>
                                 </div>
                             </div>
@@ -124,11 +156,11 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             whileTap={{ scale: 0.98 }}
                             className="button"
                             style={{ ...buttonStyle, background: "linear-gradient(45deg, #6BCB77, #2ecc71)" }}
-                            onClick={handleRegister}
+                            onClick={handleJoin}
                         >
-                            마법 연구소 가입하기! ✨
+                            가입하고 시작하기! ✨
                         </motion.button>
-                        <button onClick={() => setShowRegister(false)} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>이름 다시 쓰기</button>
+                        <button onClick={() => setMode("choose")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>돌아가기</button>
                     </>
                 )}
 
