@@ -11,6 +11,11 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
+    // Use absolute URL for Vercel backend if running on Firebase/other host
+    const API_BASE = typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+        ? ""
+        : "https://kids-ai-lab.vercel.app";
+
     const generateStory = async () => {
         if (!prompt) return;
         if (isOutOfCredits) return;
@@ -19,7 +24,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
         setCurrentPage(0);
 
         try {
-            const response = await fetch("/api/generate-story", {
+            const response = await fetch(`${API_BASE}/api/generate-story`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt, userName: user.name })

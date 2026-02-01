@@ -22,6 +22,11 @@ export default function MagicCanvas({
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
+    // Use absolute URL for Vercel backend if running on Firebase/other host
+    const API_BASE = typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+        ? ""
+        : "https://kids-ai-lab.vercel.app";
+
     const paintMagic = async () => {
         if (!idea) return;
         if (isOutOfCredits) return;
@@ -31,7 +36,7 @@ export default function MagicCanvas({
 
         try {
             // Intelligent Prompt Refinement via Gemini
-            const response = await fetch("/api/refine-prompt", {
+            const response = await fetch(`${API_BASE}/api/refine-prompt`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: idea })

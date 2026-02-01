@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // output: 'export', // Removed to support Gemini API routes and dynamic features
+  output: process.env.IS_STATIC === 'true' ? 'export' : undefined,
   images: {
     unoptimized: true,
   },
