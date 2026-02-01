@@ -65,7 +65,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [referral, setReferral] = useState("");
     const [selectedCharacter, setSelectedCharacter] = useState("stella");
     const [characterName, setCharacterName] = useState("");
-    const [mode, setMode] = useState<"avatar_setup" | "choose" | "login" | "join">("avatar_setup");
+    const [mode, setMode] = useState<"landing" | "avatar_setup" | "choose" | "login" | "join">("landing");
 
     const handleLogin = () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
@@ -139,10 +139,45 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 }}
             >
                 <div style={{ fontSize: "5rem", marginBottom: "1rem" }}>
-                    {characterMap[selectedCharacter] || "✨"}
+                    {mode === "landing" ? "🚀" : (characterMap[selectedCharacter] || "✨")}
                 </div>
 
                 <AnimatePresence mode="wait">
+                    {mode === "landing" && (
+                        <motion.div
+                            key="landing"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 1.1, opacity: 0 }}
+                        >
+                            <h1 style={{ fontSize: "2.5rem", color: "#6C5CE7", marginBottom: "1rem" }}>Magic Lab 🚀</h1>
+                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2.5rem" }}>
+                                스텔라의 마법 연구소에 온 걸 환영해! <br />
+                                오늘은 어떤 마법을 부려볼까? ✨
+                            </p>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="button"
+                                    style={{ ...buttonStyle, background: "linear-gradient(45deg, #FF6B9D, #FF8C42)" }}
+                                    onClick={() => setMode("avatar_setup")}
+                                >
+                                    처음 왔어? (모험 시작하기! ✨)
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="button"
+                                    style={{ ...buttonStyle, background: "white", color: "#6C5CE7", border: "2px solid #6C5CE7" }}
+                                    onClick={() => setMode("login")}
+                                >
+                                    이미 친구야! (로그인하기 🪄)
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    )}
                     {mode === "avatar_setup" && (
                         <motion.div
                             key="avatar"
@@ -207,7 +242,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             >
                                 준비 완료! 선택창으로 가기 →
                             </motion.button>
-                            <button onClick={() => setMode("login")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>이미 계정이 있어? 로그인</button>
+                            <button onClick={() => setMode("landing")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>뒤로 가기</button>
                         </motion.div>
                     )}
 
@@ -259,7 +294,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                             />
                             <motion.button onClick={handleLogin} style={buttonStyle}>연구소 입장! 🪄</motion.button>
-                            <button onClick={() => setMode("avatar_setup")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>처음으로 돌아가기</button>
+                            <button onClick={() => setMode("landing")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>뒤로 가기</button>
                         </motion.div>
                     )}
 
