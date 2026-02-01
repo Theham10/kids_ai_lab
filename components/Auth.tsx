@@ -73,7 +73,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const handleLogin = () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
 
-        const adminNames = ["스텔라", "stella", "admin"];
+        const adminNames = ["스텔라", "stella", "admin", "마스터", "master"];
         const isAdmin = adminNames.includes(name.toLowerCase());
 
         if (!isAdmin) {

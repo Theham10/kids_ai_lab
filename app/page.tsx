@@ -7,10 +7,11 @@ import MagicMotion from "../components/MagicMotion";
 import Auth, { UserProfile } from "../components/Auth";
 import HeroCenter from "../components/HeroCenter";
 import AIDisclosure from "../components/AIDisclosure";
+import Settings from "../components/Settings";
 
 export default function Home() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion">("dashboard");
+  const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion" | "settings">("dashboard");
   const [gallery, setGallery] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
   const [showAIDisclosure, setShowAIDisclosure] = useState(false);
@@ -92,6 +93,7 @@ export default function Home() {
       case "draw": return <MagicCanvas onBack={handleBack} user={user} onSaveToGallery={addToGallery} gallery={gallery} onDecrementCredits={decrementCredits} />;
       case "motion": return <MagicMotion onBack={handleBack} user={user} gallery={gallery} />;
       case "hero": return <HeroCenter onBack={handleBack} user={user} />;
+      case "settings": return <Settings onBack={handleBack} user={user} onUpdateUser={(updated) => setUser(updated)} />;
       default: return (
         <>
           <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem" }}>
@@ -116,13 +118,22 @@ export default function Home() {
                 </span>
               </div>
             </motion.div>
-            <button className="button" style={{
-              fontSize: "0.95rem",
-              padding: "0.6rem 1.5rem",
-              background: "white",
-              color: "#666",
-              border: "2px solid #eee"
-            }} onClick={handleLogout}>Logout</button>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button className="button" style={{
+                fontSize: "0.95rem",
+                padding: "0.6rem 1.5rem",
+                background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
+                color: "white",
+                border: "none"
+              }} onClick={() => setView("settings")}>⚙️ 설정</button>
+              <button className="button" style={{
+                fontSize: "0.95rem",
+                padding: "0.6rem 1.5rem",
+                background: "white",
+                color: "#666",
+                border: "2px solid #eee"
+              }} onClick={handleLogout}>Logout</button>
+            </div>
           </nav>
 
           <header style={{ textAlign: "center", marginBottom: "5rem" }}>
