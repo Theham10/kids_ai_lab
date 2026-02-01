@@ -68,6 +68,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [characterName, setCharacterName] = useState("");
     const [mode, setMode] = useState<"landing" | "avatar_setup" | "choose" | "login" | "join">("landing");
     const [showParentalGate, setShowParentalGate] = useState(false);
+    const [privacyConsent, setPrivacyConsent] = useState(false);
 
     const handleLogin = () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
@@ -94,6 +95,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
     const handleJoin = () => {
         if (!name || !email || !age || !gender || !characterName) return alert("모든 정보를 채워줘야 고귀한 히어로가 될 수 있어! ✨");
+        if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
 
         const newUser: UserProfile = {
             id: "new-" + Date.now(),
@@ -328,6 +330,41 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 <div style={{ marginTop: "0.5rem", padding: "1rem", background: "#f8f9ff", borderRadius: "20px", border: "1px dashed #A29BFE", marginBottom: "1.5rem" }}>
                                     <label style={{ ...labelStyle, color: "#6C5CE7" }}>🎁 친구 추천 코드</label>
                                     <input type="text" placeholder="친구의 이름" value={referral} onChange={(e) => setReferral(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
+                                </div>
+
+                                <div style={{
+                                    marginTop: "1.5rem",
+                                    padding: "1.5rem",
+                                    background: "#fff",
+                                    borderRadius: "20px",
+                                    border: "2px solid #6C5CE7",
+                                    marginBottom: "1rem"
+                                }}>
+                                    <label style={{ display: "flex", alignItems: "flex-start", gap: "0.8rem", cursor: "pointer" }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={privacyConsent}
+                                            onChange={(e) => setPrivacyConsent(e.target.checked)}
+                                            style={{
+                                                width: "20px",
+                                                height: "20px",
+                                                marginTop: "0.2rem",
+                                                cursor: "pointer",
+                                                accentColor: "#6C5CE7"
+                                            }}
+                                        />
+                                        <div style={{ flex: 1, fontSize: "0.95rem", color: "#2d3436", lineHeight: "1.6" }}>
+                                            <strong style={{ color: "#6C5CE7" }}>[필수]</strong> 부모님,
+                                            <a
+                                                href="/privacy"
+                                                target="_blank"
+                                                style={{ color: "#6C5CE7", textDecoration: "underline", fontWeight: "bold" }}
+                                            >
+                                                개인정보 처리방침
+                                            </a>
+                                            을 읽고 동의합니다.
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
                             <motion.button onClick={handleJoin} style={{ ...buttonStyle, background: "#6BCB77" }}>기록 완료! 모험 떠나기 🚀</motion.button>

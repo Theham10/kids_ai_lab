@@ -6,12 +6,14 @@ import MagicCanvas from "../components/MagicCanvas";
 import MagicMotion from "../components/MagicMotion";
 import Auth, { UserProfile } from "../components/Auth";
 import HeroCenter from "../components/HeroCenter";
+import AIDisclosure from "../components/AIDisclosure";
 
 export default function Home() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion">("dashboard");
   const [gallery, setGallery] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [showAIDisclosure, setShowAIDisclosure] = useState(false);
 
   useEffect(() => {
     // Session Recovery
@@ -29,6 +31,12 @@ export default function Home() {
       setGallery(JSON.parse(savedGallery));
     }
     setMounted(true);
+
+    // Show AI Disclosure on first run
+    const hasSeenDisclosure = localStorage.getItem("magic_ai_disclosure_seen");
+    if (!hasSeenDisclosure) {
+      setShowAIDisclosure(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -48,15 +56,15 @@ export default function Home() {
   if (!user) {
     return (
       <main>
-        <AnimatePresence mode="wait">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <Auth onLogin={(u) => setUser(u)} />
-          </motion.div>
-        </AnimatePresence>
+        {showAIDisclosure && (
+          <AIDisclosure
+            onClose={() => {
+              setShowAIDisclosure(false);
+              localStorage.setItem("magic_ai_disclosure_seen", "true");
+            }}
+          />
+        )}
+        <Auth onLogin={(newUser) => setUser(newUser)} />
       </main>
     );
   }
