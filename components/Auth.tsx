@@ -12,6 +12,36 @@ export type UserProfile = {
     credits: number;
 };
 
+const inputStyle = {
+    width: "100%",
+    padding: "0.9rem",
+    borderRadius: "16px",
+    border: "2px solid #f1f2f6",
+    marginBottom: "0.8rem",
+    fontSize: "1.1rem",
+    outline: "none",
+    background: "#fafafa",
+};
+
+const labelStyle = {
+    display: "block",
+    fontSize: "0.85rem",
+    color: "#999",
+    marginBottom: "0.4rem",
+    marginLeft: "0.5rem",
+    fontWeight: "bold"
+};
+
+const buttonStyle = {
+    padding: "1rem",
+    fontSize: "1.2rem",
+    justifyContent: "center",
+    width: "100%",
+    background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
+    color: "white",
+    marginTop: "0.5rem"
+};
+
 export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void }) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -172,32 +202,3 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     );
 }
 
-const inputStyle = {
-    width: "100%",
-    padding: "0.9rem",
-    borderRadius: "16px",
-    border: "2px solid #f1f2f6",
-    marginBottom: "0.8rem",
-    fontSize: "1.1rem",
-    outline: "none",
-    background: "#fafafa",
-};
-
-const labelStyle = {
-    display: "block",
-    fontSize: "0.85rem",
-    color: "#999",
-    marginBottom: "0.4rem",
-    marginLeft: "0.5rem",
-    fontWeight: "bold"
-};
-
-const buttonStyle = {
-    padding: "1rem",
-    fontSize: "1.2rem",
-    justifyContent: "center",
-    width: "100%",
-    background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
-    color: "white",
-    marginTop: "0.5rem"
-};
