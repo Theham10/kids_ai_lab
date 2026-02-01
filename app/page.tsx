@@ -40,10 +40,8 @@ export default function Home() {
   useEffect(() => {
     if (user) {
       localStorage.setItem("magic_user", JSON.stringify(user));
-    } else if (mounted) {
-      localStorage.removeItem("magic_user");
     }
-  }, [user, mounted]);
+  }, [user]);
 
   if (!mounted) return null;
 
@@ -75,6 +73,7 @@ export default function Home() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("magic_user");
     setUser(null);
   };
 
