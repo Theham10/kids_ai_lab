@@ -6,22 +6,28 @@ export default function MagicCanvas({
     onBack,
     user,
     onSaveToGallery,
-    gallery
+    gallery,
+    onDecrementCredits
 }: {
     onBack: () => void,
     user: any,
     onSaveToGallery: (img: string) => void,
-    gallery: string[]
+    gallery: string[],
+    onDecrementCredits: () => void
 }) {
     const [idea, setIdea] = useState("");
     const [status, setStatus] = useState<"idle" | "refining" | "sketching" | "coloring" | "polishing" | "done">("idle");
     const [image, setImage] = useState<string | null>(null);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
+    const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
+
     const paintMagic = async () => {
         if (!idea) return;
+        if (isOutOfCredits) return;
+
         setImage(null);
-        setStatus("refining"); // New step for Gemini
+        setStatus("refining");
 
         try {
             // Intelligent Prompt Refinement via Gemini
@@ -53,6 +59,7 @@ export default function MagicCanvas({
                         setImage(newImg);
                         setStatus("done");
                         onSaveToGallery(newImg);
+                        onDecrementCredits();
                     }, 800);
                 }, 800);
             }, 800);
@@ -137,23 +144,36 @@ export default function MagicCanvas({
                         outline: "none"
                     }}
                 />
-                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
                     <button
                         className="button button-secondary"
                         onClick={paintMagic}
-                        disabled={status !== "idle" && status !== "done"}
+                        disabled={(status !== "idle" && status !== "done") || isOutOfCredits}
                         style={{
                             flex: "none",
                             width: "fit-content",
                             padding: "0.8rem 2rem",
                             justifyContent: "center",
                             fontSize: "1rem",
-                            background: status === "done" ? "#6C5CE7" : "var(--secondary)"
+                            background: isOutOfCredits ? "#ccc" : (status === "done" ? "#6C5CE7" : "var(--secondary)")
                         }}
                     >
-                        {status === "idle" ? "디즈니 마법 그리기! ✨" : status === "done" ? "다시 생성하기 🔄" : getStatusText()}
+                        {isOutOfCredits ? "마법 가루가 부족해! 🏜️" : status === "idle" ? "디즈니 마법 그리기! ✨" : status === "done" ? "다시 생성하기 🔄" : getStatusText()}
                     </button>
-                    {status === "done" && (
+                    {isOutOfCredits && (
+                        <div style={{
+                            background: "#FFF4E5", border: "2px solid #FFAD33", padding: "1rem 1.5rem", borderRadius: "20px",
+                            display: "flex", alignItems: "center", gap: "1rem", flex: 1
+                        }}>
+                            <span style={{ fontSize: "1.2rem" }}>💎</span>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: "bold", color: "#663C00" }}>마법 에너지가 바닥났어!</div>
+                                <div style={{ fontSize: "0.85rem", color: "#663C00" }}>프로 마술사가 되어 무제한으로 그려볼까?</div>
+                            </div>
+                            <button className="button" style={{ background: "#FFAD33", padding: "0.5rem 1rem", fontSize: "0.9rem" }}>프로 업그레이드 ($49)</button>
+                        </div>
+                    )}
+                    {status === "done" && !isOutOfCredits && (
                         <button
                             className="button"
                             onClick={() => { setIdea(""); setImage(null); setStatus("idle"); }}

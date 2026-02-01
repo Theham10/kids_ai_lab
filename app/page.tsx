@@ -48,10 +48,18 @@ export default function Home() {
   const handleBack = () => setView("dashboard");
   const addToGallery = (img: string) => setGallery(prev => [img, ...prev]);
 
+  const decrementCredits = () => {
+    if (user && user.credits > 0 && user.tier !== "Pro") {
+      const newUser = { ...user, credits: user.credits - 1 };
+      setUser(newUser);
+      localStorage.setItem("magic_user", JSON.stringify(newUser));
+    }
+  };
+
   const renderView = () => {
     switch (view) {
-      case "story": return <StoryMagic onBack={handleBack} user={user} />;
-      case "draw": return <MagicCanvas onBack={handleBack} user={user} onSaveToGallery={addToGallery} gallery={gallery} />;
+      case "story": return <StoryMagic onBack={handleBack} user={user} onDecrementCredits={decrementCredits} />;
+      case "draw": return <MagicCanvas onBack={handleBack} user={user} onSaveToGallery={addToGallery} gallery={gallery} onDecrementCredits={decrementCredits} />;
       case "motion": return <MagicMotion onBack={handleBack} user={user} gallery={gallery} />;
       case "hero": return <HeroCenter onBack={handleBack} user={user} />;
       default: return (

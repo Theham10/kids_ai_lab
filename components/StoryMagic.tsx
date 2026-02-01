@@ -2,15 +2,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function StoryMagic({ onBack, user }: { onBack: () => void, user: any }) {
+export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBack: () => void, user: any, onDecrementCredits: () => void }) {
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [story, setStory] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
+    const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
+
     const generateStory = async () => {
         if (!prompt) return;
+        if (isOutOfCredits) return;
         setIsGenerating(true);
         setStory(null);
         setCurrentPage(0);
@@ -31,6 +34,7 @@ export default function StoryMagic({ onBack, user }: { onBack: () => void, user:
 
             setStory(data.story);
             setIsGenerating(false);
+            onDecrementCredits();
         } catch (error) {
             console.error("Story Error:", error);
             alert("이야기 주머니가 잠시 잠겼어요. 다시 시도해볼까요?");
@@ -81,11 +85,26 @@ export default function StoryMagic({ onBack, user }: { onBack: () => void, user:
                 <button
                     className="button button-primary"
                     onClick={generateStory}
-                    disabled={isGenerating}
-                    style={{ width: "100%", justifyContent: "center", padding: "1.2rem", fontSize: "1.3rem" }}
+                    disabled={isGenerating || isOutOfCredits}
+                    style={{
+                        width: "100%", justifyContent: "center", padding: "1.2rem", fontSize: "1.3rem",
+                        background: isOutOfCredits ? "#ccc" : "var(--primary)"
+                    }}
                 >
-                    {isGenerating ? "마법 지팡이 휘두르는 중... 🪄" : "내 동화책 만들기!"}
+                    {isGenerating ? "마법 지팡이 휘두르는 중... 🪄" : isOutOfCredits ? "마법 에너지가 부족해! 🏜️" : "내 동화책 만들기!"}
                 </button>
+                {isOutOfCredits && (
+                    <div style={{
+                        marginTop: "1.5rem", background: "#f9f9ff", padding: "1.5rem", borderRadius: "20px", display: "flex", alignItems: "center", gap: "1rem", border: "2px solid #A29BFE"
+                    }}>
+                        <span style={{ fontSize: "1.5rem" }}>💎</span>
+                        <div style={{ flex: 1, textAlign: "left" }}>
+                            <div style={{ fontWeight: "bold", color: "#6C5CE7" }}>모든 마법 에너지를 사용했어!</div>
+                            <div style={{ fontSize: "0.85rem", color: "#666" }}>프로 마술사가 되면 무제한으로 동화를 만들 수 있어!</div>
+                        </div>
+                        <button className="button" style={{ background: "#A29BFE", padding: "0.5rem 1rem", fontSize: "0.9rem" }}>업그레이드</button>
+                    </div>
+                )}
             </div>
 
             <AnimatePresence mode="wait">
