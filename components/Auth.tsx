@@ -47,6 +47,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [email, setEmail] = useState("");
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
+    const [referral, setReferral] = useState("");
     const [mode, setMode] = useState<"choose" | "login" | "join">("choose");
 
     const handleLogin = () => {
@@ -73,8 +74,12 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             age,
             gender,
             tier: "Free",
-            credits: 3,
+            credits: referral ? 4 : 3,
         });
+
+        if (referral) {
+            alert(`🎉 친구 '${referral}'님의 추천으로 보너스 크레딧 1개가 추가되었어!`);
+        }
     };
 
     return (

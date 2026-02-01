@@ -207,6 +207,22 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                                 </button>
                             )}
                         </div>
+
+                        <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #eee" }}>
+                            <button
+                                onClick={() => speak(storyPages[currentPage]?.replace(/\[.*?\]\n/, ""))}
+                                className="button"
+                                style={{
+                                    width: "100%",
+                                    background: isSpeaking ? "#FF6B6B" : "linear-gradient(45deg, #FF9F43, #FF8C42)",
+                                    color: "white",
+                                    fontSize: "1.2rem",
+                                    boxShadow: "0 5px 15px rgba(255, 159, 67, 0.3)"
+                                }}
+                            >
+                                {isSpeaking ? "⏹️ 목소리 멈추기" : "🎙️ 마법 목소리로 듣기 (TTS)"}
+                            </button>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
