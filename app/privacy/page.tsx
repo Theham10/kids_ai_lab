@@ -24,7 +24,8 @@ export default function PrivacyPolicy() {
                     🛡️ 개인정보 처리방침
                 </h1>
                 <p style={{ color: "#666", marginBottom: "3rem", fontSize: "1.1rem" }}>
-                    KidGenius AI (스텔라의 마법 연구소)는 어린이의 안전과 프라이버시를 최우선으로 합니다.
+                    KidGenius AI (스텔라의 마법 연구소)는 <strong>만 4세부터 10세까지</strong>의 어린이를 위한 서비스입니다.<br />
+                    어린이의 안전과 프라이버시를 최우선으로 합니다.
                 </p>
 
                 <section style={{ marginBottom: "2.5rem" }}>
@@ -36,7 +37,7 @@ export default function PrivacyPolicy() {
                         <ul style={{ paddingLeft: "1.5rem", marginTop: "0.5rem" }}>
                             <li><strong>이름</strong>: 서비스 개인화 및 식별용</li>
                             <li><strong>이메일 (부모님)</strong>: 보호자 연락 및 계정 관리용</li>
-                            <li><strong>나이</strong>: 연령별 콘텐츠 필터링 및 안전 설정용</li>
+                            <li><strong>나이 (4-10세)</strong>: 연령별 콘텐츠 필터링 및 안전 설정용</li>
                         </ul>
 
                         <h3 style={{ fontSize: "1.3rem", color: "#6C5CE7", marginTop: "1.5rem" }}>🎨 선택 수집 정보</h3>

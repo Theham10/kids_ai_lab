@@ -95,6 +95,12 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
     const handleJoin = () => {
         if (!name || !email || !age || !gender || !characterName) return alert("모든 정보를 채워줘야 고귀한 히어로가 될 수 있어! ✨");
+
+        const ageNum = parseInt(age);
+        if (isNaN(ageNum) || ageNum < 4 || ageNum > 10) {
+            return alert("스텔라의 마법 연구소는 4세부터 10세까지의 친구들을 위한 곳이에요! 😊");
+        }
+
         if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
 
         const newUser: UserProfile = {
@@ -155,10 +161,22 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             exit={{ scale: 1.1, opacity: 0 }}
                         >
                             <h1 style={{ fontSize: "2.5rem", color: "#6C5CE7", marginBottom: "1rem" }}>Magic Lab 🚀</h1>
-                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2.5rem" }}>
+                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "1rem" }}>
                                 스텔라의 마법 연구소에 온 걸 환영해! <br />
                                 오늘은 어떤 마법을 부려볼까? ✨
                             </p>
+                            <div style={{
+                                background: "#f9f9ff",
+                                padding: "0.8rem 1.5rem",
+                                borderRadius: "16px",
+                                border: "2px solid #A29BFE",
+                                marginBottom: "1.5rem",
+                                fontSize: "0.95rem",
+                                color: "#6C5CE7",
+                                fontWeight: "bold"
+                            }}>
+                                👶 만 4-10세 어린이를 위한 AI 놀이터
+                            </div>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                                 <motion.button
@@ -315,8 +333,16 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 <input type="email" placeholder="example@magic.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
                                 <div style={{ display: "flex", gap: "1rem" }}>
                                     <div style={{ flex: 1 }}>
-                                        <label style={labelStyle}>나이</label>
-                                        <input type="number" value={age} onChange={(e) => setAge(e.target.value)} style={inputStyle} />
+                                        <label style={labelStyle}>나이 (4-10세)</label>
+                                        <input
+                                            type="number"
+                                            min="4"
+                                            max="10"
+                                            value={age}
+                                            onChange={(e) => setAge(e.target.value)}
+                                            style={inputStyle}
+                                            placeholder="4-10세"
+                                        />
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <label style={labelStyle}>성별</label>

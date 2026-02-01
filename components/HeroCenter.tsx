@@ -6,7 +6,7 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
         { id: 1, name: "초보 마술사", icon: "🪄", color: "#A29BFE", achieved: true },
         { id: 2, name: "동화 작가", icon: "📖", color: "#FF8C42", achieved: true },
         { id: 3, name: "일류 화가", icon: "🎨", color: "#FF6B9D", achieved: true },
-        { id: 4, name: "모션 챔피언", icon: "🎬", color: "#4D96FF", achieved: user.tier === "Pro" },
+        { id: 4, name: "모션 챔피언", icon: "🎬", color: "#4D96FF", achieved: true },
         { id: 5, name: "상상력 대장", icon: "🧠", color: "#6BCB77", achieved: true },
     ];
 
@@ -83,19 +83,15 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
                 <h3 style={{ marginBottom: "1rem" }}>히어로 정보 🦄</h3>
                 <div style={{ display: "flex", gap: "2rem" }}>
                     <div>
-                        <div style={{ fontSize: "0.9rem", color: "#999" }}>현재 티어</div>
-                        <div style={{ fontWeight: "bold", color: "#6C5CE7" }}>{user.tier} Creator</div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: "0.9rem", color: "#999" }}>생성한 마법</div>
-                        <div style={{ fontWeight: "bold", color: "#2d3436" }}>99+ 건</div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: "0.9rem", color: "#999" }}>마법 크레딧</div>
-                        <div style={{ fontWeight: "bold", color: "#2d3436" }}>{user.credits === 9999 ? "무제한 ♾️" : `${user.credits}개`}</div>
+                        <div style={{ fontSize: "0.9rem", color: "#999" }}>나의 명예
+                            <div style={{ fontWeight: "bold", color: "#6C5CE7" }}>Magic Creator ✨</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: "0.9rem", color: "#999" }}>생성한 마법</div>
+                            <div style={{ fontWeight: "bold", color: "#2d3436" }}>99+ 건</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+            );
 }

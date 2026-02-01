@@ -56,15 +56,16 @@ export default function Home() {
   if (!user) {
     return (
       <main>
-        {showAIDisclosure && (
+        {showAIDisclosure ? (
           <AIDisclosure
             onClose={() => {
               setShowAIDisclosure(false);
               localStorage.setItem("magic_ai_disclosure_seen", "true");
             }}
           />
+        ) : (
+          <Auth onLogin={(newUser) => setUser(newUser)} />
         )}
-        <Auth onLogin={(newUser) => setUser(newUser)} />
       </main>
     );
   }
@@ -111,7 +112,7 @@ export default function Home() {
                   fontWeight: "bold",
                   boxShadow: "0 4px 10px rgba(108, 92, 231, 0.3)"
                 }}>
-                  Magic Creator {user.tier === "Pro" ? "⭐" : ""}
+                  Magic Creator ✨
                 </span>
               </div>
             </motion.div>
