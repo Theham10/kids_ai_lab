@@ -38,10 +38,10 @@ export default function MagicCanvas({
 
         try {
             // Intelligent Prompt Refinement via Gemini
-            const response = await fetch(`${API_BASE}/api/generate-art`, { // Updated fetch URL and API_BASE
+            const response = await fetch(`${API_BASE}/api/refine-prompt`, { // Corrected endpoint
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: idea, style }) // Updated body to include style
+                body: JSON.stringify({ prompt: idea }) // Refine prompt only needs the idea (prompt)
             });
 
             const data = await response.json();
