@@ -69,19 +69,31 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
     const handleLogin = () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
-        const adminNames = ["스텔라", "stella"];
+
+        const adminNames = ["스텔라", "stella", "admin"];
         const isAdmin = adminNames.includes(name.toLowerCase());
+
+        if (!isAdmin) {
+            const savedUsers = JSON.parse(localStorage.getItem("kids_ai_users") || "{}");
+            if (!savedUsers[name]) {
+                return alert("어라? 기록장에서 이름을 찾을 수 없어. 회원가입을 먼저 해줄래? ✨");
+            }
+            onLogin(savedUsers[name]);
+            return;
+        }
+
         onLogin({
-            id: isAdmin ? "admin-" + Date.now() : "user-" + Date.now(),
+            id: "admin-" + Date.now(),
             name,
-            tier: isAdmin ? "Pro" : "Free",
-            credits: isAdmin ? 9999 : 3,
+            tier: "Pro",
+            credits: 9999,
         });
     };
 
     const handleJoin = () => {
         if (!name || !email || !age || !gender || !characterName) return alert("모든 정보를 채워줘야 고귀한 히어로가 될 수 있어! ✨");
-        onLogin({
+
+        const newUser: UserProfile = {
             id: "new-" + Date.now(),
             name,
             email,
@@ -91,7 +103,14 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             credits: referral ? 4 : 3,
             character: selectedCharacter,
             characterName: characterName
-        });
+        };
+
+        // Save to mock database (localStorage)
+        const savedUsers = JSON.parse(localStorage.getItem("kids_ai_users") || "{}");
+        savedUsers[name] = newUser;
+        localStorage.setItem("kids_ai_users", JSON.stringify(savedUsers));
+
+        onLogin(newUser);
         if (referral) alert(`🎉 친구 추천 보너스 전송 완료!`);
     };
 
