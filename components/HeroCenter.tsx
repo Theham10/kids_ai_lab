@@ -83,15 +83,15 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
                 <h3 style={{ marginBottom: "1rem" }}>히어로 정보 🦄</h3>
                 <div style={{ display: "flex", gap: "2rem" }}>
                     <div>
-                        <div style={{ fontSize: "0.9rem", color: "#999" }}>나의 명예
-                            <div style={{ fontWeight: "bold", color: "#6C5CE7" }}>Magic Creator ✨</div>
-                        </div>
-                        <div>
-                            <div style={{ fontSize: "0.9rem", color: "#999" }}>생성한 마법</div>
-                            <div style={{ fontWeight: "bold", color: "#2d3436" }}>99+ 건</div>
-                        </div>
+                        <div style={{ fontSize: "0.9rem", color: "#999" }}>나의 명예</div>
+                        <div style={{ fontWeight: "bold", color: "#6C5CE7" }}>Magic Creator ✨</div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: "0.9rem", color: "#999" }}>생성한 마법</div>
+                        <div style={{ fontWeight: "bold", color: "#2d3436" }}>99+ 건</div>
                     </div>
                 </div>
             </div>
-            );
+        </div>
+    );
 }
