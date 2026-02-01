@@ -48,7 +48,10 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
           >
-            <Auth onLogin={(u) => setUser(u)} />
+            <Auth onLogin={(u) => {
+              setUser(u);
+              localStorage.setItem("magic_user", JSON.stringify(u));
+            }} />
           </motion.div>
         </AnimatePresence>
       </main>
