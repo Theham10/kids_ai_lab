@@ -6,11 +6,13 @@ export default function StoryMagic({ onBack }: { onBack: () => void }) {
     const [prompt, setPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [story, setStory] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(0);
 
     const generateStory = () => {
         if (!prompt) return;
         setIsGenerating(true);
         setStory(null);
+        setCurrentPage(0);
 
         // Prompt formatting to ensure Korean
         const combinedPrompt = `${prompt}에 대한 마법 같은 동화를 한국어로 지어줘.`;
@@ -27,6 +29,8 @@ export default function StoryMagic({ onBack }: { onBack: () => void }) {
             setIsGenerating(false);
         }, 4500);
     };
+
+    const storyPages = story ? story.split('\n\n') : [];
 
     return (
         <div className="card" style={{ maxWidth: "800px", margin: "0 auto" }}>
@@ -65,9 +69,10 @@ export default function StoryMagic({ onBack }: { onBack: () => void }) {
                 </button>
             </div>
 
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
                 {isGenerating && (
                     <motion.div
+                        key="gen"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -86,8 +91,10 @@ export default function StoryMagic({ onBack }: { onBack: () => void }) {
 
                 {story && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        key={`page-${currentPage}`}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
                         style={{
                             background: "#fff",
                             padding: "2.5rem",
@@ -97,15 +104,49 @@ export default function StoryMagic({ onBack }: { onBack: () => void }) {
                             fontSize: "1.3rem",
                             position: "relative",
                             boxShadow: "0 15px 40px rgba(255, 140, 66, 0.15)",
-                            color: "#2d3436"
+                            color: "#2d3436",
+                            minHeight: "400px",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between"
                         }}
                     >
-                        <div style={{ position: "absolute", top: -15, left: 20, background: "var(--primary)", color: "white", padding: "4px 15px", borderRadius: "99px", fontSize: "0.9rem", fontWeight: "bold" }}>
-                            제 1장: 시작되는 모험
+                        <div>
+                            <div style={{ background: "var(--primary)", color: "white", padding: "4px 15px", borderRadius: "99px", fontSize: "0.9rem", fontWeight: "bold", display: "inline-block", marginBottom: "1.5rem" }}>
+                                {storyPages[currentPage]?.match(/\[(.*?)\]/)?.[1] || `제 ${currentPage + 1}장`}
+                            </div>
+                            <p style={{ whiteSpace: "pre-wrap" }}>
+                                {storyPages[currentPage]?.replace(/\[.*?\]\n/, "")}
+                            </p>
                         </div>
-                        {story}
-                        <div style={{ textAlign: "right", marginTop: "2rem" }}>
-                            <button className="button button-primary" style={{ padding: "0.8rem 1.5rem" }}>다음 페이지 →</button>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2.5rem", alignItems: "center" }}>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                                disabled={currentPage === 0}
+                                className="button"
+                                style={{ background: "#eee", color: "#666", padding: "0.8rem 1.2rem", visibility: currentPage === 0 ? "hidden" : "visible" }}
+                            >
+                                ← 이전
+                            </button>
+                            <span style={{ fontSize: "0.9rem", color: "#999", fontWeight: "bold" }}>{currentPage + 1} / {storyPages.length}</span>
+                            {currentPage < storyPages.length - 1 ? (
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(storyPages.length - 1, prev + 1))}
+                                    className="button button-primary"
+                                    style={{ padding: "0.8rem 1.5rem" }}
+                                >
+                                    다음 페이지 →
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => { setStory(null); setPrompt(""); }}
+                                    className="button"
+                                    style={{ background: "#2ecc71", color: "white", padding: "0.8rem 1.5rem" }}
+                                >
+                                    다 읽었어요! 🎉
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}
