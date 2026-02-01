@@ -36,6 +36,7 @@ export default function Settings({ onBack, user, onUpdateUser }: {
     if (showParentalGate) {
         return (
             <ParentalGate
+                userEmail={user.email}
                 onSuccess={() => setShowParentalGate(false)}
                 onCancel={onBack}
             />

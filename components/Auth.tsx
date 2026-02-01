@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ParentalGate from "./ParentalGate";
+import ParentalGateMath from "./ParentalGateMath";
 
 export type UserProfile = {
     id: string;
@@ -400,7 +401,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 </AnimatePresence>
 
                 {showParentalGate && (
-                    <ParentalGate
+                    <ParentalGateMath
                         onSuccess={() => {
                             setShowParentalGate(false);
                             setMode("join");

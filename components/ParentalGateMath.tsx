@@ -2,25 +2,28 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function ParentalGate({
-    userEmail,
+export default function ParentalGateMath({
     onSuccess,
     onCancel
 }: {
-    userEmail: string;
     onSuccess: () => void;
     onCancel: () => void;
 }) {
-    const [email, setEmail] = useState("");
+    const [answer, setAnswer] = useState("");
     const [error, setError] = useState(false);
+    const [question] = useState(() => {
+        const num1 = Math.floor(Math.random() * 20) + 10;
+        const num2 = Math.floor(Math.random() * 20) + 10;
+        return { num1, num2, correctAnswer: num1 + num2 };
+    });
 
     const handleSubmit = () => {
-        if (email.toLowerCase().trim() === userEmail.toLowerCase().trim()) {
+        if (parseInt(answer) === question.correctAnswer) {
             onSuccess();
         } else {
             setError(true);
             setTimeout(() => setError(false), 2000);
-            setEmail(""); // Clear input on error
+            setAnswer("");
         }
     };
 
@@ -45,7 +48,7 @@ export default function ParentalGate({
                 animate={{ scale: 1 }}
                 className="card"
                 style={{
-                    maxWidth: "500px",
+                    maxWidth: "450px",
                     width: "100%",
                     padding: "2.5rem",
                     textAlign: "center",
@@ -57,22 +60,34 @@ export default function ParentalGate({
                 <h2 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "1rem" }}>
                     보호자 확인
                 </h2>
-                <p style={{ color: "#666", marginBottom: "2rem", fontSize: "1rem", lineHeight: "1.6" }}>
+                <p style={{ color: "#666", marginBottom: "2rem", fontSize: "1rem" }}>
                     이 영역은 부모님만 접근할 수 있어요.<br />
-                    <strong>가입 시 등록한 부모님 이메일</strong>을 입력해주세요.
+                    아래 문제를 풀어주세요.
                 </p>
 
+                <div style={{
+                    background: "#f9f9ff",
+                    padding: "1.5rem",
+                    borderRadius: "20px",
+                    marginBottom: "1.5rem",
+                    border: "2px solid #A29BFE"
+                }}>
+                    <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#2d3436" }}>
+                        {question.num1} + {question.num2} = ?
+                    </div>
+                </div>
+
                 <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="number"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-                    placeholder="parent@example.com"
+                    placeholder="답을 입력하세요"
                     autoFocus
                     style={{
                         width: "100%",
                         padding: "1rem",
-                        fontSize: "1.1rem",
+                        fontSize: "1.2rem",
                         borderRadius: "16px",
                         border: error ? "3px solid #ff6b6b" : "2px solid #f1f2f6",
                         textAlign: "center",
@@ -91,11 +106,10 @@ export default function ParentalGate({
                             padding: "0.8rem",
                             borderRadius: "12px",
                             marginBottom: "1rem",
-                            fontSize: "0.9rem",
-                            fontWeight: "bold"
+                            fontSize: "0.9rem"
                         }}
                     >
-                        ❌ 이메일이 일치하지 않습니다. 다시 입력해주세요.
+                        답이 맞지 않아요. 다시 시도해주세요.
                     </motion.div>
                 )}
 
