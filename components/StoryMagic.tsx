@@ -49,11 +49,31 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const speak = (text: string) => {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
+
         const utterance = new SpeechSynthesisUtterance(text);
+
+        // Get available Korean voices
+        const voices = window.speechSynthesis.getVoices();
+        const koreanVoices = voices.filter(v => v.lang.startsWith('ko'));
+
+        // Prefer Google or Microsoft Korean voices (more natural)
+        const preferredVoice = koreanVoices.find(v =>
+            v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Yuna') || v.name.includes('Sora')
+        ) || koreanVoices[0];
+
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+
         utterance.lang = "ko-KR";
-        utterance.rate = 1.0;
+        utterance.rate = 0.95; // Slightly slower for clarity
+        utterance.pitch = 1.3; // Higher pitch for cuteness
+        utterance.volume = 1.0;
+
         utterance.onstart = () => setIsSpeaking(true);
         utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
         window.speechSynthesis.speak(utterance);
     };
 
