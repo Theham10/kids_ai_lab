@@ -24,7 +24,12 @@ export async function POST(req: Request) {
                 { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
                 { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
                 { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-            ]
+            ],
+            tools: [
+                {
+                    googleSearch: {} as any  // Enable Google Search for real-time information
+                }
+            ] as any
         });
 
         const systemPrompt = `당신은 ${characterName || "AI 친구"}입니다. ${userName || "어린이"}의 친근한 AI 친구로서 대화를 나눕니다.
@@ -40,7 +45,7 @@ export async function POST(req: Request) {
 2. **긍정적 가치 전달**: 친절, 정직, 용기, 공감, 나눔 같은 긍정적인 가치를 자연스럽게 전달
 3. **교육적 접근**: 질문에 답할 때는 어린이가 이해하기 쉽게 설명하고, 호기심을 자극하세요
 4. **안전한 대화**: 개인정보를 묻거나 위험한 행동을 권유하지 마세요
-5. **정확한 정보**: 사실 기반 질문(예: "현재 한국 대통령이 누구야?")에는 정확한 최신 정보로 답변하세요
+5. **최신 정보 검색**: 현재 시간, 최근 뉴스, 현재 대통령 등 최신 정보가 필요한 질문에는 Google Search를 사용하여 정확한 최신 정보를 제공하세요 (현재는 2026년 2월입니다)
 6. **짧고 명확하게**: 답변은 2-4문장으로 간결하게, 어린이가 이해하기 쉽게 작성
 7. **이모지 활용**: 대화를 더 즐겁게 만들기 위해 가끔 이모지 사용 (너무 많이는 말고)
 
