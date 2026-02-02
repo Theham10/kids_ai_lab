@@ -44,11 +44,11 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
                         color: "white", padding: "8px 15px", borderRadius: "20px",
                         fontSize: "0.9rem", fontWeight: "bold", border: "4px solid white"
                     }}>
-                        LV. 99 👑
+                        LV. 1 🌱
                     </div>
                 </div>
-                <h2 style={{ fontSize: "2.5rem", marginTop: "1.5rem", color: "#2d3436" }}>{user.name} & {user.characterName || "스텔라"}</h2>
-                <p style={{ color: "#636e72", fontSize: "1.2rem" }}>세상을 아름답게 바꾸는 꼬마 마술사 ✨</p>
+                <h2 style={{ fontSize: "2.5rem", marginTop: "1.5rem", color: "#2d3436" }}>{user.name} & {user.characterName || "AI 친구"}</h2>
+                <p style={{ color: "#636e72", fontSize: "1.2rem" }}>나의 성장 기록과 배지를 확인하는 비밀 기지에요! ✨</p>
             </motion.div>
 
             <div style={{ textAlign: "left", marginTop: "3rem" }}>
@@ -80,15 +80,15 @@ export default function HeroCenter({ onBack, user }: { onBack: () => void, user:
             </div>
 
             <div style={{ marginTop: "4rem", padding: "2rem", background: "#f9f9ff", borderRadius: "24px", textAlign: "left" }}>
-                <h3 style={{ marginBottom: "1rem" }}>히어로 정보 🦄</h3>
+                <h3 style={{ marginBottom: "1rem" }}>나의 히어로 정보 🦄</h3>
                 <div style={{ display: "flex", gap: "2rem" }}>
                     <div>
-                        <div style={{ fontSize: "0.9rem", color: "#999" }}>나의 명예</div>
+                        <div style={{ fontSize: "0.9rem", color: "#999" }}>히어로 등급</div>
                         <div style={{ fontWeight: "bold", color: "#6C5CE7" }}>Magic Creator ✨</div>
                     </div>
                     <div>
-                        <div style={{ fontSize: "0.9rem", color: "#999" }}>생성한 마법</div>
-                        <div style={{ fontWeight: "bold", color: "#2d3436" }}>99+ 건</div>
+                        <div style={{ fontSize: "0.9rem", color: "#999" }}>성공한 마법</div>
+                        <div style={{ fontWeight: "bold", color: "#2d3436" }}>0 건</div>
                     </div>
                 </div>
             </div>

@@ -8,6 +8,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const [story, setStory] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [illustrations, setIllustrations] = useState<{ [key: number]: string }>({});
 
     const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
         ? ""
@@ -21,6 +22,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
         setIsGenerating(true);
         setStory(null);
         setCurrentPage(0);
+        setIllustrations({});
 
         try {
             const response = await fetch(`${API_BASE}/api/generate-story`, {
@@ -37,6 +39,15 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
             }
 
             setStory(data.story);
+
+            // Pre-generate the first scene's illustration if story exists
+            const scenes = data.story.split('\n\n');
+            if (scenes.length > 0) {
+                const firstScene = scenes[0].replace(/\[.*?\]\n/, "");
+                const seed = Math.floor(Math.random() * 100000);
+                setIllustrations({ 0: `https://image.pollinations.ai/prompt/${encodeURIComponent(firstScene + " in dreamlike 3d disney style, bright colors, friendly characters")}?width=800&height=400&nologo=true&seed=${seed}` });
+            }
+
             setIsGenerating(false);
             onDecrementCredits();
         } catch (error) {
@@ -78,6 +89,18 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     };
 
     const storyPages = story ? story.split('\n\n') : [];
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+        if (!illustrations[newPage]) {
+            const pageText = storyPages[newPage].replace(/\[.*?\]\n/, "");
+            const seed = Math.floor(Math.random() * 100000);
+            setIllustrations(prev => ({
+                ...prev,
+                [newPage]: `https://image.pollinations.ai/prompt/${encodeURIComponent(pageText + " in dreamlike 3d disney style, bright colors, friendly characters")}?width=800&height=400&nologo=true&seed=${seed}`
+            }));
+        }
+    };
 
     return (
         <div className="card" style={{ maxWidth: "800px", margin: "0 auto" }}>
@@ -177,7 +200,19 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                             justifyContent: "space-between"
                         }}
                     >
-                        <div>
+                        <div style={{ marginBottom: "2rem" }}>
+                            {illustrations[currentPage] ? (
+                                <motion.img
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    src={illustrations[currentPage]}
+                                    style={{ width: "100%", borderRadius: "20px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)", marginBottom: "1.5rem" }}
+                                />
+                            ) : (
+                                <div style={{ width: "100%", height: "200px", background: "#f1f2f6", borderRadius: "20px", display: "flex", alignItems: "center", justifyContent: "center", fontStyle: "italic", color: "#999" }}>
+                                    그림을 그려오고 있어요... 🎨
+                                </div>
+                            )}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
                                 <div style={{ background: "var(--primary)", color: "white", padding: "4px 15px", borderRadius: "99px", fontSize: "0.9rem", fontWeight: "bold", display: "inline-block" }}>
                                     {storyPages[currentPage]?.match(/\[(.*?)\]/)?.[1] || `제 ${currentPage + 1}장`}
@@ -210,7 +245,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
 
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2.5rem", alignItems: "center" }}>
                             <button
-                                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                                onClick={() => handlePageChange(Math.max(0, currentPage - 1))}
                                 disabled={currentPage === 0}
                                 className="button"
                                 style={{ background: "#eee", color: "#666", padding: "0.8rem 1.2rem", visibility: currentPage === 0 ? "hidden" : "visible" }}
@@ -220,7 +255,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                             <span style={{ fontSize: "0.9rem", color: "#999", fontWeight: "bold" }}>{currentPage + 1} / {storyPages.length}</span>
                             {currentPage < storyPages.length - 1 ? (
                                 <button
-                                    onClick={() => setCurrentPage(prev => Math.min(storyPages.length - 1, prev + 1))}
+                                    onClick={() => handlePageChange(Math.min(storyPages.length - 1, currentPage + 1))}
                                     className="button button-primary"
                                     style={{ padding: "0.8rem 1.5rem" }}
                                 >

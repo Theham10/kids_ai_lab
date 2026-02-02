@@ -12,11 +12,12 @@ export default function Settings({ onBack, user, onUpdateUser }: {
     const isMaster = user.tier === "Pro" && user.credits === 9999;
     const [showParentalGate, setShowParentalGate] = useState(!isMaster);
     const [name, setName] = useState(user.name);
+    const [email, setEmail] = useState(user.email || "");
     const [characterName, setCharacterName] = useState(user.characterName);
     const [character, setCharacter] = useState(user.character);
 
     const characters = [
-        { id: "stella", name: "스텔라", emoji: "✨", desc: "마법의 별" },
+        { id: "stella", name: "스타", emoji: "✨", desc: "마법의 별" },
         { id: "leo", name: "레오", emoji: "🦁", desc: "용감한 사자" },
         { id: "pinky", name: "핑키", emoji: "🦄", desc: "신비한 유니콘" },
         { id: "bolt", name: "볼트", emoji: "🤖", desc: "똑똑한 로봇" }
@@ -26,6 +27,7 @@ export default function Settings({ onBack, user, onUpdateUser }: {
         const updatedUser = {
             ...user,
             name,
+            email,
             characterName,
             character
         };
@@ -59,9 +61,9 @@ export default function Settings({ onBack, user, onUpdateUser }: {
                 ⚙️ 설정
             </h2>
 
-            <div style={{ marginBottom: "2rem" }}>
+            <div style={{ marginBottom: "1.5rem" }}>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold", color: "#2d3436" }}>
-                    👤 이름
+                    👤 나의 히어로 이름
                 </label>
                 <input
                     type="text"
@@ -77,9 +79,27 @@ export default function Settings({ onBack, user, onUpdateUser }: {
                 />
             </div>
 
-            <div style={{ marginBottom: "2rem" }}>
+            <div style={{ marginBottom: "1.5rem" }}>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold", color: "#2d3436" }}>
-                    🎭 단짝 친구 이름
+                    ✉️ 부모님 이메일
+                </label>
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                        width: "100%",
+                        padding: "1rem",
+                        borderRadius: "12px",
+                        border: "2px solid #f1f2f6",
+                        fontSize: "1.1rem"
+                    }}
+                />
+            </div>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "bold", color: "#2d3436" }}>
+                    🎭 AI 친구 이름
                 </label>
                 <input
                     type="text"
@@ -113,12 +133,13 @@ export default function Settings({ onBack, user, onUpdateUser }: {
                                 background: character === char.id ? "#f9f9ff" : "white",
                                 cursor: "pointer",
                                 textAlign: "center",
-                                transition: "all 0.2s"
+                                transition: "all 0.2s",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center"
                             }}
                         >
-                            <div style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>{char.emoji}</div>
-                            <div style={{ fontWeight: "bold", color: "#2d3436" }}>{char.name}</div>
-                            <div style={{ fontSize: "0.85rem", color: "#999" }}>{char.desc}</div>
+                            <div style={{ fontSize: "3.5rem" }}>{char.emoji}</div>
                         </motion.div>
                     ))}
                 </div>

@@ -8,10 +8,11 @@ import Auth, { UserProfile } from "../components/Auth";
 import HeroCenter from "../components/HeroCenter";
 import AIDisclosure from "../components/AIDisclosure";
 import Settings from "../components/Settings";
+import AIChat from "../components/AIChat";
 
 export default function Home() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion" | "settings">("dashboard");
+  const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion" | "settings" | "chat">("dashboard");
   const [gallery, setGallery] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
   const [showAIDisclosure, setShowAIDisclosure] = useState(false);
@@ -94,6 +95,7 @@ export default function Home() {
       case "motion": return <MagicMotion onBack={handleBack} user={user} gallery={gallery} />;
       case "hero": return <HeroCenter onBack={handleBack} user={user} />;
       case "settings": return <Settings onBack={handleBack} user={user} onUpdateUser={(updated) => setUser(updated)} />;
+      case "chat": return <AIChat onBack={handleBack} user={user} />;
       default: return (
         <>
           <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem" }}>
@@ -105,17 +107,20 @@ export default function Home() {
               <img src="/mascot.png" alt="Mascot" style={{ width: "60px", height: "60px", borderRadius: "12px" }} />
               <div>
                 <h3 style={{ margin: 0, fontSize: "1.5rem", color: "#2d3436" }}>반가워, {user.name}!</h3>
-                <span style={{
+                <div style={{
                   fontSize: "0.85rem",
-                  background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
+                  background: "linear-gradient(45deg, #FF9F43, #FF8C42)",
                   padding: "6px 15px",
                   borderRadius: "20px",
                   color: "white",
                   fontWeight: "bold",
-                  boxShadow: "0 4px 10px rgba(108, 92, 231, 0.3)"
+                  boxShadow: "0 4px 10px rgba(255, 140, 66, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px"
                 }}>
-                  Magic Creator ✨
-                </span>
+                  <span>💎 마법 에너지: {user.tier === "Pro" ? "무제한" : user.credits}</span>
+                </div>
               </div>
             </motion.div>
             <div style={{ display: "flex", gap: "1rem" }}>
@@ -143,10 +148,10 @@ export default function Home() {
               style={{ fontSize: "4.5rem", marginBottom: "1rem", color: "#6C5CE7" }}
               className="animate-pop"
             >
-              Magic Lab 🚀
+              Hero Magic Lab 🚀
             </motion.h1>
             <p style={{ fontSize: "1.6rem", color: "#636e72" }}>
-              무한한 공간, 저 너머로! 스텔라의 상상을 그려줄게. ✨
+              무한한 공간, 저 너머로! {user.name}와 {user.characterName}의 상상을 그려줄게. ✨
             </p>
           </header>
 
@@ -169,8 +174,9 @@ export default function Home() {
             {[
               { id: "story", icon: "📖", title: "스토리 마법", desc: "나만의 동화책 만들기.", color: "#FF8C42" },
               { id: "draw", icon: "🎨", title: "매직 캔버스", desc: "상상하는 무엇이든 그려봐!", color: "#FF6B9D" },
+              { id: "chat", icon: "💬", title: "AI 친구와 대화하기", desc: "AI 친구와 함께 수다떨기!", color: "#9B59B6" },
               { id: "motion", icon: "🎬", title: "매직 모션", desc: "내 그림이 움직여요!", color: "#4D96FF", pro: true },
-              { id: "hero", icon: "🦄", title: "히어로 센터", desc: "진정한 영웅이 되는 곳!", color: "#6BCB77" }
+              { id: "hero", icon: "🦄", title: "히어로 센터", desc: "나의 정보와 마법 기록!", color: "#6BCB77" }
             ].map((item) => (
               <motion.div
                 key={item.id}
@@ -216,7 +222,7 @@ export default function Home() {
           </motion.div>
 
           <footer style={{ marginTop: "8rem", textAlign: "center", opacity: 0.4 }}>
-            <p>To Infinity and Beyond! Stella's Creative Lab ✨</p>
+            <p>무한한 공간, 저 너머로! {user.name}의 마법 연구소 ✨</p>
           </footer>
         </>
       );

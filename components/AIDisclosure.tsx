@@ -54,7 +54,7 @@ export default function AIDisclosure({
                         <ul style={{ paddingLeft: "1.5rem", color: "#2d3436" }}>
                             <li style={{ marginBottom: "0.8rem" }}>스토리를 만들 때 <strong>멋진 이야기를 도와줘요</strong></li>
                             <li style={{ marginBottom: "0.8rem" }}>그림을 그릴 때 <strong>상상을 더 예쁘게 만들어줘요</strong></li>
-                            <li style={{ marginBottom: "0.8rem" }}>단짝 친구처럼 함께 <strong>창작을 도와주는 도구</strong>예요</li>
+                            <li style={{ marginBottom: "0.8rem" }}>AI 친구처럼 함께 <strong>창작을 도와주는 도구</strong>예요</li>
                         </ul>
                     </div>
 

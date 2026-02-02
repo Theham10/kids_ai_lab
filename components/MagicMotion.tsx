@@ -62,11 +62,12 @@ export default function MagicMotion({
                     <motion.img
                         {...commonProps}
                         animate={{
-                            scaleX: [1, 1.1, 0.9, 1.05, 1],
-                            scaleY: [1, 0.9, 1.1, 0.95, 1],
-                            borderRadius: ["32px", "40px", "24px", "32px"]
+                            scaleX: [1, 1.25, 0.75, 1.15, 1],
+                            scaleY: [1, 0.75, 1.25, 0.85, 1],
+                            borderRadius: ["32px", "60px", "20px", "32px"],
+                            rotate: [0, -5, 5, 0]
                         }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     />
                 );
             case "stars":
@@ -74,8 +75,12 @@ export default function MagicMotion({
                     <div style={{ width: "100%", height: "100%", position: "relative" }}>
                         <motion.img
                             {...commonProps}
-                            animate={{ scale: [1, 1.02, 1], rotate: [0, 1, -1, 0] }}
-                            transition={{ duration: 5, repeat: Infinity }}
+                            animate={{
+                                scale: [1, 1.05, 1],
+                                rotate: [0, 1, -1, 0],
+                                filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity }}
                         />
                         {/* Flying Stars Effect */}
                         {[...Array(15)].map((_, i) => (
@@ -101,10 +106,12 @@ export default function MagicMotion({
                     <motion.img
                         {...commonProps}
                         animate={{
-                            scale: [1, 1.2, 1],
-                            filter: ["brightness(1) contrast(1)", "brightness(1.5) contrast(1.2)", "brightness(1) contrast(1)"],
+                            scale: [1, 1.3, 0.9, 1.1, 1],
+                            filter: ["brightness(1) contrast(1)", "brightness(2) contrast(1.5)", "brightness(1) contrast(1)"],
+                            x: [0, -10, 10, -5, 5, 0],
+                            y: [0, 10, -10, 5, -5, 0]
                         }}
-                        transition={{ duration: 0.8, repeat: Infinity, repeatType: "mirror" }}
+                        transition={{ duration: 0.5, repeat: Infinity }}
                     />
                 );
             case "rainbow":
@@ -112,10 +119,12 @@ export default function MagicMotion({
                     <motion.img
                         {...commonProps}
                         animate={{
-                            filter: ["hue-rotate(0deg) saturate(1)", "hue-rotate(360deg) saturate(2)", "hue-rotate(0deg) saturate(1)"],
-                            y: [-10, 10, -10]
+                            filter: ["hue-rotate(0deg) saturate(1) brightness(1)", "hue-rotate(180deg) saturate(3) brightness(1.2)", "hue-rotate(360deg) saturate(1) brightness(1)"],
+                            y: [-25, 25, -25],
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 10, -10, 0]
                         }}
-                        transition={{ duration: 4, repeat: Infinity }}
+                        transition={{ duration: 2.5, repeat: Infinity }}
                     />
                 );
             default:
