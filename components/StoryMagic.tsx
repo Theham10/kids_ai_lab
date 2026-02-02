@@ -59,26 +59,37 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
 
     const speak = (text: string) => {
         if (!window.speechSynthesis) return;
+
+        // If already speaking, stop it
+        if (isSpeaking) {
+            window.speechSynthesis.cancel();
+            setIsSpeaking(false);
+            return;
+        }
+
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Get available Korean voices
+        // Get available voices
         const voices = window.speechSynthesis.getVoices();
-        const koreanVoices = voices.filter(v => v.lang.startsWith('ko'));
 
-        // Prefer Google or Microsoft Korean voices (more natural)
-        const preferredVoice = koreanVoices.find(v =>
-            v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Yuna') || v.name.includes('Sora')
-        ) || koreanVoices[0];
+        // Try to find young female Korean voice
+        // Priority: Google > Microsoft > Any female Korean voice
+        const youngFemaleVoice = voices.find(v =>
+            v.lang.startsWith('ko') &&
+            (v.name.includes('Yuna') || v.name.includes('Sora') || v.name.toLowerCase().includes('female'))
+        ) || voices.find(v =>
+            v.lang.startsWith('ko') && v.name.includes('Google')
+        ) || voices.find(v => v.lang.startsWith('ko'));
 
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
+        if (youngFemaleVoice) {
+            utterance.voice = youngFemaleVoice;
         }
 
         utterance.lang = "ko-KR";
-        utterance.rate = 0.95; // Slightly slower for clarity
-        utterance.pitch = 1.3; // Higher pitch for cuteness
+        utterance.rate = 0.9; // Slower for child storytelling
+        utterance.pitch = 1.5; // Much higher pitch for young girl voice
         utterance.volume = 1.0;
 
         utterance.onstart = () => setIsSpeaking(true);
@@ -233,9 +244,9 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                                         justifyContent: "center",
                                         boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
                                     }}
-                                    title="읽어주기"
+                                    title={isSpeaking ? "멈추기" : "읽어주기"}
                                 >
-                                    {isSpeaking ? "🔊" : "🔈"}
+                                    {isSpeaking ? "⏹️" : "🔈"}
                                 </button>
                             </div>
                             <p style={{ whiteSpace: "pre-wrap" }}>
@@ -284,7 +295,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                                     boxShadow: "0 5px 15px rgba(255, 159, 67, 0.3)"
                                 }}
                             >
-                                {isSpeaking ? "⏹️ 목소리 멈추기" : "🎙️ 마법 목소리로 듣기 (TTS)"}
+                                {isSpeaking ? "⏹️ 목소리 멈추기" : "🎙️ 어린이 목소리로 듣기 (TTS)"}
                             </button>
                         </div>
                     </motion.div>
