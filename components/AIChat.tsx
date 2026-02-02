@@ -58,49 +58,37 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
         }
     }, [messages, user.character]);
 
-    const generateAIResponse = (userMessage: string): string => {
-        const lowerMsg = userMessage.toLowerCase();
+    const generateAIResponse = async (userMessage: string): Promise<string> => {
+        try {
+            const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
+                ? ""
+                : "https://stella-magic.vercel.app";
 
-        // Simple response patterns
-        if (lowerMsg.includes("안녕") || lowerMsg.includes("hi") || lowerMsg.includes("hello")) {
-            return `안녕! ${user.name}! 오늘 하루는 어때? 😊`;
-        }
-        if (lowerMsg.includes("이름") || lowerMsg.includes("name")) {
-            return `내 이름은 ${user.characterName}이야! 너의 AI 친구야! 💫`;
-        }
-        if (lowerMsg.includes("도와") || lowerMsg.includes("help")) {
-            return "물론이지! 무엇을 도와줄까? 질문이 있으면 언제든지 물어봐! 🌈";
-        }
-        if (lowerMsg.includes("좋아하") || lowerMsg.includes("favorite") || lowerMsg.includes("like")) {
-            return "나는 너와 함께 상상하고 창작하는 걸 제일 좋아해! 그림도 그리고 이야기도 만들면서 말이야! 🎨✨";
-        }
-        if (lowerMsg.includes("재미") || lowerMsg.includes("fun")) {
-            return "같이 스토리 마법이나 매직 캔버스에서 놀아볼까? 정말 재미있을 거야! 🚀";
-        }
-        if (lowerMsg.includes("고마") || lowerMsg.includes("thank")) {
-            return "천만에! 언제든지 나를 찾아줘! 항상 여기 있을게! 💖";
-        }
-        if (lowerMsg.includes("사랑") || lowerMsg.includes("love")) {
-            return "나도 너를 사랑해! 우리 영원한 친구야! 🌟💕";
-        }
-        if (lowerMsg.includes("뭐해") || lowerMsg.includes("what are you doing")) {
-            return "너와 대화하는 중이지! 이게 내가 제일 좋아하는 일이야! 😄";
-        }
+            const response = await fetch(`${API_BASE}/api/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: userMessage,
+                    characterName: user.characterName || "AI 친구",
+                    userName: user.name,
+                    conversationHistory: messages.slice(-10) // Send last 10 messages for context
+                })
+            });
 
-        // Default responses
-        const defaultResponses = [
-            "흥미로운 질문이네! 더 자세히 말해줄래? 🤔",
-            "와, 정말 재미있는 얘기야! 더 들려줘! 🌟",
-            "그렇구나! 나도 그것에 대해 더 알고 싶어! 💭",
-            "좋은 생각이야! 우리 같이 더 탐험해볼까? 🚀",
-            `${user.name}, 너는 정말 똑똑해! 💡`,
-            "오~ 대단한데! 계속 얘기해봐! ✨"
-        ];
+            const data = await response.json();
 
-        return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+            if (data.error) {
+                return `앗, 지금은 대화하기 어려워! 😅 ${data.error}`;
+            }
+
+            return data.response || "음... 뭔가 잘 안 되는 것 같아. 다시 한번 말해줄래? 🤔";
+        } catch (error) {
+            console.error("Chat API Error:", error);
+            return "지금은 인터넷이 불안정한가봐. 잠시 후에 다시 얘기하자! 📡";
+        }
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!inputText.trim()) return;
 
         // Add user message
@@ -111,21 +99,33 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
             timestamp: new Date()
         };
 
+        const currentInput = inputText; // Save current input
         setMessages(prev => [...prev, userMessage]);
         setInputText("");
         setIsTyping(true);
 
-        // Simulate AI thinking and response
-        setTimeout(() => {
+        // Get AI response
+        try {
+            const aiResponseText = await generateAIResponse(currentInput);
             const aiResponse: Message = {
                 id: Date.now() + 1,
-                text: generateAIResponse(inputText),
+                text: aiResponseText,
                 sender: "ai",
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, aiResponse]);
+        } catch (error) {
+            console.error("Error getting AI response:", error);
+            const errorResponse: Message = {
+                id: Date.now() + 1,
+                text: "죄송해! 지금은 대화하기 힘들어. 다시 시도해줄래? 😅",
+                sender: "ai",
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorResponse]);
+        } finally {
             setIsTyping(false);
-        }, 800 + Math.random() * 1200);
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
