@@ -54,10 +54,10 @@ const buttonStyle = {
 };
 
 const characterMap: Record<string, string> = {
-    stella: "✨",
-    leo: "🦁",
-    pinky: "🦄",
-    bolt: "🤖"
+    stella: "/pet_puppy.png",
+    leo: "/pet_kitten.png",
+    pinky: "/pet_panda.png",
+    bolt: "/pet_rabbit.png"
 };
 
 export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void }) {
@@ -184,7 +184,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                     {mode === "landing" ? (
                         <img src="/stella_char.png" alt="Stella" style={{ width: "120px", height: "120px", borderRadius: "30px", objectFit: "cover", border: "4px solid #A29BFE", margin: "0 auto" }} />
                     ) : (
-                        <div style={{ fontSize: "5rem" }}>{characterMap[selectedCharacter] || "✨"}</div>
+                        <img src={characterMap[selectedCharacter]} alt="Pet" style={{ width: "120px", height: "120px", borderRadius: "30px", objectFit: "cover", border: "4px solid #A29BFE", margin: "0 auto" }} />
                     )}
                 </div>
 
@@ -262,10 +262,10 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 <label style={labelStyle}>🌟 함께할 친구 고르기</label>
                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
                                     {[
-                                        { id: "stella", emoji: "✨" },
-                                        { id: "leo", emoji: "🦁" },
-                                        { id: "pinky", emoji: "🦄" },
-                                        { id: "bolt", emoji: "🤖" }
+                                        { id: "stella", image: "/pet_puppy.png" },
+                                        { id: "leo", image: "/pet_kitten.png" },
+                                        { id: "pinky", image: "/pet_panda.png" },
+                                        { id: "bolt", image: "/pet_rabbit.png" }
                                     ].map(char => (
                                         <motion.div
                                             key={char.id}
@@ -284,7 +284,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                                 justifyContent: "center"
                                             }}
                                         >
-                                            <div style={{ fontSize: "3rem" }}>{char.emoji}</div>
+                                            <img src={char.image} alt={char.id} style={{ width: "80px", height: "80px", borderRadius: "20px", objectFit: "cover" }} />
                                         </motion.div>
                                     ))}
                                 </div>

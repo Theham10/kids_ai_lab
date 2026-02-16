@@ -16,10 +16,10 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const characterMap: Record<string, string> = {
-        stella: "✨",
-        leo: "🦁",
-        pinky: "🦄",
-        bolt: "🤖"
+        stella: "/pet_puppy.png",
+        leo: "/pet_kitten.png",
+        pinky: "/pet_panda.png",
+        bolt: "/pet_rabbit.png"
     };
 
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
@@ -226,9 +226,9 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
                                     width: "40px", height: "40px", borderRadius: "50%",
                                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: "1.5rem", flexShrink: 0
+                                    fontSize: "1.5rem", flexShrink: 0, overflow: "hidden"
                                 }}>
-                                    {characterMap[user.character || "stella"]}
+                                    <img src={characterMap[user.character || "stella"]} alt="Pet" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                 </div>
                             )}
                             <div style={{
@@ -290,9 +290,9 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
                             width: "40px", height: "40px", borderRadius: "50%",
                             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "1.5rem", overflow: "hidden" // Added overflow hidden to contain the image
+                            fontSize: "1.5rem", overflow: "hidden"
                         }}>
-                            <img src="/stella_char.png" alt="Stella" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <img src={characterMap[user.character || "stella"]} alt="Pet" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                         <div style={{
                             padding: "1rem 1.5rem",
