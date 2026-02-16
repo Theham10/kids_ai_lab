@@ -154,9 +154,16 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             });
         } catch (err: any) {
             console.error("Join failed", err);
-            // Provide a bit more info to the user/parent
-            const errorMsg = err.message || "알 수 없는 마법 오류";
-            alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
+
+            // Check for common connection errors
+            const isFetchError = err.message?.includes('Failed to fetch') || err.name === 'TypeError';
+
+            if (isFetchError) {
+                alert("기록장에 적는 중에 통신이 끊겼어! (오류: Failed to fetch)\n\n부모님, 혹시 '광고 차단기(AdBlock)'가 켜져 있거나 인터넷이 불안정할 수도 있어요. 잠시 끄고 다시 한번만 시도해 주세요! 🪄");
+            } else {
+                const errorMsg = err.message || "알 수 없는 마법 오류";
+                alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
+            }
         }
     };
 
