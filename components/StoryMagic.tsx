@@ -10,7 +10,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [illustrations, setIllustrations] = useState<{ [key: number]: string }>({});
 
-    const API_BASE = "";
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
     const isOutOfCredits = user?.tier !== "Pro" && (user?.credits ?? 0) <= 0;
 
@@ -190,18 +190,67 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                 {isGenerating && (
                     <motion.div
                         key="gen"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{ textAlign: "center", padding: "2rem" }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
+                        style={{
+                            textAlign: "center",
+                            padding: "4rem 2rem",
+                            background: "linear-gradient(135deg, #FFF9F0 0%, #FFF 100%)",
+                            borderRadius: "32px",
+                            border: "3px solid #FF8C42",
+                            boxShadow: "0 20px 40px rgba(255, 140, 66, 0.1)",
+                            position: "relative",
+                            overflow: "hidden"
+                        }}
                     >
-                        <motion.img
-                            src="/mascot.png"
-                            animate={{ y: [-10, 10, -10], rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
-                            transition={{ repeat: Infinity, duration: 3 }}
-                            style={{ width: "120px", height: "120px", borderRadius: "24px", marginBottom: "1.5rem" }}
+                        {/* Background Pulsing Magic Circle */}
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 360]
+                            }}
+                            transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                            style={{
+                                position: "absolute",
+                                top: "50%", left: "50%",
+                                width: "400px", height: "400px",
+                                marginTop: "-200px", marginLeft: "-200px",
+                                background: "radial-gradient(circle, rgba(255, 140, 66, 0.2) 0%, transparent 70%)",
+                                zIndex: 0
+                            }}
                         />
-                        <p style={{ color: "var(--primary)", fontWeight: "bold", fontSize: "1.2rem" }}>AI가 열심히 이야기를 상상하고 있어요...</p>
+
+                        <div style={{ position: "relative", zIndex: 1 }}>
+                            <motion.img
+                                src="/mascot.png"
+                                animate={{
+                                    y: [-15, 15, -15],
+                                    rotate: [0, 5, -5, 0],
+                                    scale: [1, 1.1, 1]
+                                }}
+                                transition={{ repeat: Infinity, duration: 3 }}
+                                style={{ width: "130px", height: "130px", borderRadius: "30px", marginBottom: "2rem", boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+                            />
+                            <h3 style={{ color: "#FF8C42", fontWeight: "bold", fontSize: "1.8rem", marginBottom: "1.5rem" }}>
+                                스텔라가 동화 세계를 여행 중이에요... 🚀
+                            </h3>
+                            <div style={{ width: "100%", background: "#f1f2f6", height: "12px", borderRadius: "6px", overflow: "hidden", maxWidth: "400px", margin: "0 auto" }}>
+                                <motion.div
+                                    animate={{
+                                        width: ["0%", "30%", "60%", "90%", "100%"]
+                                    }}
+                                    transition={{ duration: 15, ease: "easeInOut" }}
+                                    style={{ height: "100%", background: "linear-gradient(90deg, #FF8C42, #FFB347)" }}
+                                />
+                            </div>
+                            <p style={{ marginTop: "1.5rem", color: "#666", fontSize: "1.2rem" }}>
+                                잠시만 기다리면 마법 같은 이야기가 펼쳐질 거예요! ✨
+                            </p>
+                            <p style={{ fontSize: "0.9rem", color: "#999", marginTop: "1rem" }}>
+                                (AI가 열심히 그림을 그리고 이야기를 짓고 있어요)
+                            </p>
+                        </div>
                     </motion.div>
                 )}
 

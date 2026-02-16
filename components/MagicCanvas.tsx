@@ -22,7 +22,7 @@ export default function MagicCanvas({
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
-    const API_BASE = "";
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
@@ -197,46 +197,148 @@ export default function MagicCanvas({
                 {status !== "idle" && status !== "done" && (
                     <motion.div
                         key="loading"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
+                        style={{
+                            textAlign: "center",
+                            padding: "5rem 2rem",
+                            background: "linear-gradient(135deg, #f9f9ff 0%, #fff 100%)",
+                            borderRadius: "40px",
+                            border: "3px solid #6C5CE7",
+                            marginTop: "2rem",
+                            position: "relative",
+                            overflow: "hidden",
+                            boxShadow: "0 25px 50px rgba(108, 92, 231, 0.15)"
+                        }}
+                    >
+                        {/* Background Pulsing Magic Circle */}
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.5, 1],
+                                opacity: [0.1, 0.3, 0.1],
+                                rotate: 360
+                            }}
+                            transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+                            style={{
+                                position: "absolute",
+                                top: "50%", left: "50%",
+                                width: "400px", height: "400px",
+                                marginTop: "-200px", marginLeft: "-200px",
+                                background: "radial-gradient(circle, #a29bfe 0%, transparent 70%)",
+                                zIndex: 0
+                            }}
+                        />
+
+                        <div style={{ position: "relative", zIndex: 1 }}>
+                            <motion.div
+                                animate={{
+                                    y: [-15, 15, -15],
+                                    rotate: [0, 20, -20, 0],
+                                    filter: ["drop-shadow(0 0 10px #6C5CE7)", "drop-shadow(0 0 30px #a29bfe)", "drop-shadow(0 0 10px #6C5CE7)"]
+                                }}
+                                transition={{ repeat: Infinity, duration: 2.5 }}
+                                style={{ fontSize: "6rem", marginBottom: "2rem", display: "inline-block" }}
+                            >
+                                🪄
+                            </motion.div>
+
+                            <h3 style={{ color: "#6C5CE7", fontSize: "2rem", marginBottom: "1.5rem", fontWeight: "bold" }}>
+                                {getStatusText()}
+                            </h3>
+
+                            <div style={{ width: "100%", background: "#eee", height: "16px", borderRadius: "8px", overflow: "hidden", maxWidth: "500px", margin: "0 auto", border: "2px solid #fff", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)" }}>
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{
+                                        width: status === "refining" ? "25%" :
+                                            status === "sketching" ? "50%" :
+                                                status === "coloring" ? "75%" :
+                                                    status === "polishing" ? "95%" : "100%"
+                                    }}
+                                    transition={{ duration: 1 }}
+                                    style={{
+                                        height: "100%",
+                                        background: "linear-gradient(90deg, #6C5CE7, #a29bfe, #6C5CE7)",
+                                        backgroundSize: "200% 100%"
+                                    }}
+                                />
+                            </div>
+
+                            <motion.div
+                                animate={{ opacity: [0.4, 1, 0.4] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                style={{ marginTop: "2rem", color: "#666", fontSize: "1.2rem", fontWeight: "500" }}
+                            >
+                                {status === "refining" && "Gemini 마법사가 그림의 비밀 코드를 만드는 중... 🧪"}
+                                {status === "sketching" && "구름 위 보이지 않는 캔버스에 밑그림을 그려요... ☁️"}
+                                {status === "coloring" && "무지개 끝에서 가져온 특별한 색을 입히고 있어요... 🌈"}
+                                {status === "polishing" && "마지막으로 반짝이는 요정 가루를 뿌려 완성 중! ✨"}
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {isGenerating && (
+                    <motion.div
+                        key="gen"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
                         style={{
                             textAlign: "center",
                             padding: "4rem 2rem",
-                            background: "#f9f9ff",
+                            background: "linear-gradient(135deg, #FFF9F0 0%, #FFF 100%)",
                             borderRadius: "32px",
-                            border: "2px dashed #6C5CE7",
-                            marginTop: "2rem"
+                            border: "3px solid var(--primary)",
+                            boxShadow: "0 20px 40px rgba(255, 140, 66, 0.1)"
                         }}
                     >
                         <motion.div
                             animate={{
-                                scale: [1, 1.1, 1],
-                                rotate: [0, 10, -10, 0],
-                                filter: ["hue-rotate(0deg)", "hue-rotate(90deg)", "hue-rotate(0deg)"]
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 360]
                             }}
-                            transition={{ repeat: Infinity, duration: 2 }}
-                            style={{ fontSize: "5rem", marginBottom: "1.5rem" }}
-                        >
-                            🪄
-                        </motion.div>
-                        <h3 style={{ color: "#6C5CE7", fontSize: "1.8rem", marginBottom: "1rem" }}>{getStatusText()}</h3>
-                        <div style={{ width: "100%", background: "#dee2e6", height: "12px", borderRadius: "6px", overflow: "hidden", maxWidth: "450px", margin: "0 auto" }}>
-                            <motion.div
-                                initial={{ width: 0 }}
+                            transition={{ repeat: Infinity, duration: 5, ease: "linear" }}
+                            style={{
+                                position: "absolute",
+                                top: "50%", left: "50%",
+                                width: "300px", height: "300px",
+                                marginTop: "-150px", marginLeft: "-150px",
+                                background: "radial-gradient(circle, rgba(255, 140, 66, 0.2) 0%, transparent 70%)",
+                                zIndex: 0
+                            }}
+                        />
+
+                        <div style={{ position: "relative", zIndex: 1 }}>
+                            <motion.img
+                                src="/mascot.png"
                                 animate={{
-                                    width: status === "refining" ? "20%" :
-                                        status === "sketching" ? "40%" :
-                                            status === "coloring" ? "70%" :
-                                                status === "polishing" ? "90%" : "100%"
+                                    y: [-15, 15, -15],
+                                    rotate: [0, 5, -5, 0],
+                                    scale: [1, 1.1, 1]
                                 }}
-                                style={{ height: "100%", background: "linear-gradient(90deg, #6C5CE7, #a29bfe)" }}
+                                transition={{ repeat: Infinity, duration: 3 }}
+                                style={{ width: "130px", height: "130px", borderRadius: "30px", marginBottom: "2rem", boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
                             />
+                            <h3 style={{ color: "var(--primary)", fontWeight: "bold", fontSize: "1.8rem", marginBottom: "1.5rem" }}>
+                                스텔라가 동화 세계를 여행 중이에요... 🚀
+                            </h3>
+                            <div style={{ width: "100%", background: "#f1f2f6", height: "12px", borderRadius: "6px", overflow: "hidden", maxWidth: "400px", margin: "0 auto" }}>
+                                <motion.div
+                                    animate={{
+                                        width: ["0%", "30%", "60%", "90%", "100%"]
+                                    }}
+                                    transition={{ duration: 15, ease: "easeInOut" }}
+                                    style={{ height: "100%", background: "linear-gradient(90deg, #FF8C42, #FFB347)" }}
+                                />
+                            </div>
+                            <p style={{ marginTop: "1.5rem", color: "#666", fontSize: "1.1rem" }}>
+                                잠시만 기다리면 마법 같은 이야기가 펼쳐질 거예요! ✨
+                            </p>
                         </div>
-                        <p style={{ marginTop: "1.5rem", color: "#999", fontSize: "1.1rem" }}>스텔라를 위한 아주 특별한 마법 작품을 준비하고 있어요!</p>
                     </motion.div>
                 )}
-
                 {imageUrl && status === "done" && (
                     <motion.div
                         key="result"

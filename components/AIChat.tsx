@@ -22,7 +22,7 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
         bolt: "🤖"
     };
 
-    const API_BASE = "";
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
     const speak = async (text: string) => {
         if (isSpeaking) {
@@ -104,7 +104,7 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
 
     const generateAIResponse = async (userMessage: string): Promise<string> => {
         try {
-            const API_BASE = "";
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
             const response = await fetch(`${API_BASE}/api/chat`, {
                 method: "POST",
