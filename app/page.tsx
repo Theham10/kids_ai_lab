@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
+import { handleAuthAction } from "./actions/auth";
 import StoryMagic from "../components/StoryMagic";
 import MagicCanvas from "../components/MagicCanvas";
 import MagicMotion from "../components/MagicMotion";
@@ -27,24 +28,18 @@ export default function Home() {
         const parsed = JSON.parse(savedUser);
         setUser(parsed);
         // Refresh data from Supabase for production consistency
-        // Refresh data via Magic Gate (Relative path) for production consistency and ad-blocker bypass
+        // Refresh data via Server Action for maximum reliability
         if (parsed.id && !parsed.id.startsWith('admin')) {
-          fetch('/api/magic-gate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'recover', userId: parsed.id })
-          })
-            .then(res => res.json())
+          handleAuthAction({ action: 'recover', userId: parsed.id })
             .then(result => {
-              if (result.data) {
+              if (result.success && result.data) {
                 const updated = { ...result.data, characterName: result.data.character_name };
                 setUser(updated);
                 localStorage.setItem("magic_user", JSON.stringify(updated));
               }
             })
             .catch(err => {
-              console.warn("Magic Gate recovery failed, trying direct", err);
-              // Direct fallback
+              console.warn("Server action recovery failed, trying direct", err);
               supabase.from('magic_users').select('*').eq('id', parsed.id).single().then(({ data }) => {
                 if (data) setUser({ ...data, characterName: data.character_name });
               });
@@ -106,19 +101,14 @@ export default function Home() {
       localStorage.setItem("magic_user", JSON.stringify(newUser));
 
       // Persist to Supabase
-      // Persist via Magic Gate (Relative path) to bypass ad-blockers
+      // Persist via Server Action
       if (user.id && !user.id.startsWith('admin')) {
-        fetch('/api/magic-gate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'update-credits', userId: user.id, credits: newCredits })
-        })
-          .then(res => {
-            if (!res.ok) throw new Error("API sync failed");
+        handleAuthAction({ action: 'update-credits', userId: user.id, credits: newCredits })
+          .then(result => {
+            if (!result.success) throw new Error(result.error);
           })
           .catch(err => {
-            console.warn("API credit sync failed, trying direct", err);
-            // Direct fallback
+            console.warn("Server action credit sync failed, trying direct", err);
             supabase.from('magic_users').update({ credits: newCredits }).eq('id', user.id).then(({ error }) => {
               if (error) console.error("Direct credit sync failed", error);
             });

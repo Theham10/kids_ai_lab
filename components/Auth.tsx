@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
+import { handleAuthAction } from "../app/actions/auth";
 import ParentalGate from "./ParentalGate";
 import ParentalGateMath from "./ParentalGateMath";
 
@@ -80,24 +81,18 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!isAdmin) {
             try {
-                // Use relative path for maximum reliability on same host
-                try {
-                    const res = await fetch('/api/magic-gate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'login', name: name.trim() })
-                    });
+                // Strategy 1: Use Next.js Server Action (Most robust against ad-blockers/shields)
+                const result = await handleAuthAction({ action: 'login', name: name.trim() });
 
-                    if (res.ok) {
-                        const result = await res.json();
-                        onLogin(result.data);
-                        return;
-                    }
-                } catch (proxyErr: any) {
-                    console.warn("Magic Gate failed (login), attempting direct fallback", proxyErr);
+                if (result.success) {
+                    onLogin(result.data);
+                    return;
                 }
 
-                // Fallback: Direct Supabase call (Might be blocked by AdBlock)
+                // If Server Action failed with a network error/etc, try direct fallback
+                console.warn("Server Action failed (login), trying direct fallback", result.error);
+
+                // Strategy 2: Direct Supabase call
                 const { data, error } = await supabase
                     .from('magic_users')
                     .select('*')
@@ -152,33 +147,19 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         }
 
         try {
-            let success = false;
+            // Strategy 1: Use Next.js Server Action (Most robust)
+            const result = await handleAuthAction({ action: 'register', userData: newUser });
 
-            // Strategy 1: Attempt via Magic Gate (Relative path)
-            try {
-                const res = await fetch('/api/magic-gate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'register', userData: newUser })
-                });
-
-                if (res.ok) {
-                    const result = await res.json();
-                    onLogin({ ...result.data, characterName: result.data.character_name });
-                    success = true;
-                } else if (res.status === 400) {
-                    const errorData = await res.json();
-                    if (errorData.code === '23505') {
-                        return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
-                    }
-                }
-            } catch (proxyErr: any) {
-                console.warn("Magic Gate failed (register), attempting direct fallback", proxyErr);
+            if (result.success) {
+                onLogin({ ...result.data, characterName: result.data.character_name });
+                return;
+            } else if (result.code === '23505') {
+                return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
             }
 
-            if (success) return;
+            console.warn("Server Action failed (register), trying direct fallback", result.error);
 
-            // Strategy 2: Direct Fallback (If gate fails - might be blocked by AdBlock)
+            // Strategy 2: Direct Fallback
             const { data, error } = await supabase
                 .from('magic_users')
                 .insert([newUser])
@@ -195,7 +176,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             onLogin({ ...data, characterName: data.character_name });
         } catch (err: any) {
             console.error("Join failed overall", err);
-            const diagnosticInfo = `URL: ${window.location.host}, Err: ${err.message || "Unknown"}`;
+            const diagnosticInfo = `URL: ${window.location.host}, Version: v1.3-action, Err: ${err.message || "Unknown"}`;
             alert(`기록장에 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄\n(진단정보: ${diagnosticInfo})`);
         }
     };
@@ -257,7 +238,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 position: "relative"
                             }}>
                                 👶 만 4-10세 어린이를 위한 AI 놀이터
-                                <span style={{ position: "absolute", bottom: "-15px", right: "10px", fontSize: "0.6rem", opacity: 0.5 }}>v1.2-magic-gate</span>
+                                <span style={{ position: "absolute", bottom: "-15px", right: "10px", fontSize: "0.6rem", opacity: 0.5 }}>v1.3-magic-action</span>
                             </div>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
