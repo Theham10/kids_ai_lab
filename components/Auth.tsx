@@ -80,11 +80,9 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!isAdmin) {
             try {
-                // Try API Proxy first to bypass ad-blockers, with Fallback to direct if proxy fails to fetch
-                const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
+                // Use relative path for maximum reliability on same host
                 try {
-                    const res = await fetch(`${API_BASE}/api/auth`, {
+                    const res = await fetch('/api/magic-gate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'login', name: name.trim() })
@@ -95,11 +93,11 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                         onLogin(result.data);
                         return;
                     }
-                } catch (proxyErr) {
-                    console.warn("API Proxy failed (login), attempting direct fallback", proxyErr);
+                } catch (proxyErr: any) {
+                    console.warn("Magic Gate failed (login), attempting direct fallback", proxyErr);
                 }
 
-                // Fallback: Direct Supabase call
+                // Fallback: Direct Supabase call (Might be blocked by AdBlock)
                 const { data, error } = await supabase
                     .from('magic_users')
                     .select('*')
@@ -114,7 +112,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 return;
             } catch (err: any) {
                 console.error("Login failed overall", err);
-                return alert("연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨");
+                const diagnosticInfo = `URL: ${window.location.host}, Err: ${err.message || "Unknown"}`;
+                return alert(`연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨\n(진단정보: ${diagnosticInfo})`);
             }
         }
 
@@ -153,12 +152,11 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         }
 
         try {
-            const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
             let success = false;
 
-            // Strategy 1: Attempt via API Proxy (Bypasses AdBlockers)
+            // Strategy 1: Attempt via Magic Gate (Relative path)
             try {
-                const res = await fetch(`${API_BASE}/api/auth`, {
+                const res = await fetch('/api/magic-gate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'register', userData: newUser })
@@ -174,13 +172,13 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                         return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
                     }
                 }
-            } catch (proxyErr) {
-                console.warn("API Proxy failed (register), attempting direct fallback", proxyErr);
+            } catch (proxyErr: any) {
+                console.warn("Magic Gate failed (register), attempting direct fallback", proxyErr);
             }
 
             if (success) return;
 
-            // Strategy 2: Direct Fallback (If proxy fails/not-found)
+            // Strategy 2: Direct Fallback (If gate fails - might be blocked by AdBlock)
             const { data, error } = await supabase
                 .from('magic_users')
                 .insert([newUser])
@@ -197,8 +195,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             onLogin({ ...data, characterName: data.character_name });
         } catch (err: any) {
             console.error("Join failed overall", err);
-            const errorMsg = err.message || "알 수 없는 마법 오류";
-            alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
+            const diagnosticInfo = `URL: ${window.location.host}, Err: ${err.message || "Unknown"}`;
+            alert(`기록장에 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄\n(진단정보: ${diagnosticInfo})`);
         }
     };
 
@@ -255,9 +253,11 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 marginBottom: "1.5rem",
                                 fontSize: "0.95rem",
                                 color: "#6C5CE7",
-                                fontWeight: "bold"
+                                fontWeight: "bold",
+                                position: "relative"
                             }}>
                                 👶 만 4-10세 어린이를 위한 AI 놀이터
+                                <span style={{ position: "absolute", bottom: "-15px", right: "10px", fontSize: "0.6rem", opacity: 0.5 }}>v1.2-magic-gate</span>
                             </div>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

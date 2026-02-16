@@ -27,19 +27,27 @@ export default function Home() {
         const parsed = JSON.parse(savedUser);
         setUser(parsed);
         // Refresh data from Supabase for production consistency
-        // Refresh data from Supabase for production consistency
+        // Refresh data via Magic Gate (Relative path) for production consistency and ad-blocker bypass
         if (parsed.id && !parsed.id.startsWith('admin')) {
-          supabase
-            .from('magic_users')
-            .select('*')
-            .eq('id', parsed.id)
-            .single()
-            .then(({ data }) => {
-              if (data) {
-                const updated = { ...data, characterName: data.character_name };
+          fetch('/api/magic-gate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'recover', userId: parsed.id })
+          })
+            .then(res => res.json())
+            .then(result => {
+              if (result.data) {
+                const updated = { ...result.data, characterName: result.data.character_name };
                 setUser(updated);
                 localStorage.setItem("magic_user", JSON.stringify(updated));
               }
+            })
+            .catch(err => {
+              console.warn("Magic Gate recovery failed, trying direct", err);
+              // Direct fallback
+              supabase.from('magic_users').select('*').eq('id', parsed.id).single().then(({ data }) => {
+                if (data) setUser({ ...data, characterName: data.character_name });
+              });
             });
         }
       } catch (e) {
@@ -98,14 +106,22 @@ export default function Home() {
       localStorage.setItem("magic_user", JSON.stringify(newUser));
 
       // Persist to Supabase
-      // Persist to Supabase
+      // Persist via Magic Gate (Relative path) to bypass ad-blockers
       if (user.id && !user.id.startsWith('admin')) {
-        supabase
-          .from('magic_users')
-          .update({ credits: newCredits })
-          .eq('id', user.id)
-          .then(({ error }) => {
-            if (error) console.error("Failed to sync credits", error);
+        fetch('/api/magic-gate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update-credits', userId: user.id, credits: newCredits })
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("API sync failed");
+          })
+          .catch(err => {
+            console.warn("API credit sync failed, trying direct", err);
+            // Direct fallback
+            supabase.from('magic_users').update({ credits: newCredits }).eq('id', user.id).then(({ error }) => {
+              if (error) console.error("Direct credit sync failed", error);
+            });
           });
       }
     }
