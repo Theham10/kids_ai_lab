@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { performMagic } from "./actions/magic";
 import StoryMagic from "../components/StoryMagic";
 import MagicCanvas from "../components/MagicCanvas";
 import MagicMotion from "../components/MagicMotion";
@@ -28,21 +27,23 @@ export default function Home() {
         const parsed = JSON.parse(savedUser);
         setUser(parsed);
         // Refresh data from Supabase for production consistency
-        // Refresh data via Server Action for maximum reliability
+        // Refresh data from Supabase if possible, but keep local user if offline
         if (parsed.id && !parsed.id.startsWith('admin')) {
-          performMagic({ action: 'recover', userId: parsed.id })
-            .then(result => {
-              if (result.success && result.data) {
-                const updated = { ...result.data, characterName: result.data.character_name };
+          supabase
+            .from('magic_users')
+            .select('*')
+            .eq('id', parsed.id)
+            .single()
+            .then(({ data, error }) => {
+              if (error) {
+                console.warn("Background refresh failed", error);
+                return;
+              }
+              if (data) {
+                const updated = { ...data, characterName: data.character_name };
                 setUser(updated);
                 localStorage.setItem("magic_user", JSON.stringify(updated));
               }
-            })
-            .catch(err => {
-              console.warn("Server action recovery failed, trying direct", err);
-              supabase.from('magic_users').select('*').eq('id', parsed.id).single().then(({ data }) => {
-                if (data) setUser({ ...data, characterName: data.character_name });
-              });
             });
         }
       } catch (e) {
@@ -101,17 +102,14 @@ export default function Home() {
       localStorage.setItem("magic_user", JSON.stringify(newUser));
 
       // Persist to Supabase
-      // Persist via Server Action
+      // Persist to Supabase in background
       if (user.id && !user.id.startsWith('admin')) {
-        performMagic({ action: 'update-credits', userId: user.id, credits: newCredits })
-          .then(result => {
-            if (!result.success) throw new Error(result.error);
-          })
-          .catch(err => {
-            console.warn("Server action credit sync failed, trying direct", err);
-            supabase.from('magic_users').update({ credits: newCredits }).eq('id', user.id).then(({ error }) => {
-              if (error) console.error("Direct credit sync failed", error);
-            });
+        supabase
+          .from('magic_users')
+          .update({ credits: newCredits })
+          .eq('id', user.id)
+          .then(({ error }) => {
+            if (error) console.error("Credit sync failed", error);
           });
       }
     }

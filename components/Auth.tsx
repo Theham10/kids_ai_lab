@@ -2,184 +2,183 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { performMagic } from "../app/actions/magic";
 import ParentalGate from "./ParentalGate";
 import ParentalGateMath from "./ParentalGateMath";
 
-export type UserProfile = {
+export interface UserProfile {
     id: string;
     name: string;
-    email?: string;
-    age?: string;
-    gender?: string;
-    tier: "Free" | "Pro";
+    age: number;
+    gender: string;
+    character: string;
+    characterName: string;
+    tier: string;
     credits: number;
-    character?: string;
-    characterName?: string;
-};
+    email?: string;
+    created_at?: string;
+}
 
-const inputStyle = {
-    width: "100%",
-    padding: "0.9rem",
-    borderRadius: "16px",
-    border: "2px solid #f1f2f6",
-    marginBottom: "0.8rem",
-    fontSize: "1.1rem",
-    outline: "none",
-    background: "#fafafa",
-};
+interface AuthProps {
+    onLogin: (user: UserProfile) => void;
+}
 
-const labelStyle = {
-    display: "block",
-    fontSize: "0.85rem",
-    color: "#999",
-    marginBottom: "0.4rem",
-    marginLeft: "0.5rem",
-    fontWeight: "bold"
-};
-
-const buttonStyle = {
-    padding: "1rem",
-    fontSize: "1.2rem",
-    justifyContent: "center",
-    width: "100%",
-    background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
-    color: "white",
-    marginTop: "0.5rem",
-    border: "none",
-    borderRadius: "16px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem"
-};
-
-const characterMap: Record<string, string> = {
-    stella: "/pet_puppy.png",
-    leo: "/pet_kitten.png",
-    pinky: "/pet_panda.png",
-    bolt: "/pet_rabbit.png"
-};
-
-export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void }) {
+export default function Auth({ onLogin }: AuthProps) {
+    const [mode, setMode] = useState<"landing" | "login" | "join" | "avatar_setup">("landing");
     const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
     const [age, setAge] = useState("");
-    const [gender, setGender] = useState("");
-    const [referral, setReferral] = useState(""); // Kept for schema compatibility if needed but hidden in UI
+    const [gender, setGender] = useState("여자아이");
+    const [email, setEmail] = useState("");
+    const [privacyConsent, setPrivacyConsent] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState("stella");
     const [characterName, setCharacterName] = useState("");
-    const [mode, setMode] = useState<"landing" | "avatar_setup" | "choose" | "login" | "join">("landing");
-    const [showParentalGate, setShowParentalGate] = useState(false);
-    const [privacyConsent, setPrivacyConsent] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const characters = [
+        { id: "stella", name: "스텔라", img: "/images/stella_char.webp", desc: "빛나는 별의 마법사" },
+        { id: "leo", name: "레오", img: "/images/leo_char.webp", desc: "용감한 사자 기사" },
+        { id: "coco", name: "코코", img: "/images/coco_char.webp", desc: "호기심 많은 요정" },
+        { id: "tobi", name: "토비", img: "/images/tobi_char.webp", desc: "든든한 아기 곰" },
+    ];
 
     const handleLogin = async () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
 
+        setIsLoading(true);
         const adminNames = ["스텔라", "stella", "admin", "마스터", "master"];
-        const isAdmin = adminNames.includes(name.toLowerCase());
+        const isAdmin = adminNames.includes(name.trim().toLowerCase());
 
-        if (!isAdmin) {
-            try {
-                // Strategy 1: Server Action (Hidden from ad-blockers)
-                try {
-                    const result = await performMagic({ action: 'login', name: name.trim() });
-                    if (result.success) {
-                        onLogin(result.data);
-                        return;
-                    }
-                } catch (actionErr) {
-                    console.warn("Strategy 1 (Action) failed", actionErr);
-                }
-
-                // Strategy 2: Direct Supabase fallback
-                const { data, error } = await supabase
-                    .from('magic_users')
-                    .select('*')
-                    .eq('name', name.trim())
-                    .single();
-
-                if (error || !data) {
-                    return alert("어라? 기록장에서 이름을 찾을 수 없어. 처음 왔다면 가입을 먼저 해볼까? ✨");
-                }
-
-                onLogin(data);
+        try {
+            if (isAdmin) {
+                onLogin({
+                    id: "admin-" + Date.now(),
+                    name: name.trim(),
+                    age: 7,
+                    gender: "Admin",
+                    character: "stella",
+                    characterName: "마법 마스터",
+                    tier: "Pro",
+                    credits: 9999,
+                });
                 return;
-            } catch (err: any) {
-                console.error("Login failed overall", err);
-                const diag = `V1.4, H: ${window.location.host}, E: ${err.message}`;
-                return alert(`연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨\n(진단: ${diag})`);
             }
-        }
 
-        onLogin({
-            id: "admin-" + Date.now(),
-            name,
-            tier: "Pro",
-            credits: 9999,
-        });
+            // Normal Login attempt
+            const { data, error } = await supabase
+                .from('magic_users')
+                .select('*')
+                .eq('name', name.trim())
+                .single();
+
+            if (data) {
+                onLogin({
+                    ...data,
+                    characterName: data.character_name
+                });
+            } else {
+                // Not found - check local cache as fallback?
+                const localUser = localStorage.getItem(`offline_user_${name.trim()}`);
+                if (localUser) {
+                    const parsed = JSON.parse(localUser);
+                    alert("기록장에서 잠시 이름을 못 찾았지만, 우리만의 비밀 수첩에서 찾았어! ✨");
+                    onLogin(parsed);
+                } else {
+                    alert("어라? 기록장에서 이름을 찾을 수 없어. 처음 왔다면 가입을 먼저 해볼까? ✨");
+                }
+            }
+        } catch (err) {
+            console.error("Login flow error", err);
+            alert("마법 통신망에 잠시 문제가 생겼어. 다시 한번 해볼래? ✨");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleJoin = async () => {
-        // Only name and age are strictly required for the kids' experience
-        if (!name || !age || !gender || !characterName) return alert("이름이랑 나이를 알려줘야 우리가 같이 모험을 떠날 수 있어! ✨");
+        if (!name || !age || !gender || !characterName) return alert("마법의 재료(이름, 나이)가 부족해! 다 적었는지 확인해줄래? ✨");
 
         const ageNum = parseInt(age);
-        if (isNaN(ageNum) || ageNum < 4 || ageNum > 10) {
-            return alert("마법 나라 연구소는 4세부터 10세까지의 친구들을 위한 곳이에요! 😊");
-        }
+        if (!privacyConsent) return alert("부모님의 확인이 필요해! 연구소 규칙에 체크해줄래? 🙏");
 
-        if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
+        setIsLoading(true);
 
-        const newUser: any = {
+        const newUser: UserProfile = {
+            id: crypto.randomUUID(),
             name: name.trim(),
             age: ageNum,
             gender,
-            tier: "Free",
-            credits: 5,
             character: selectedCharacter,
-            character_name: characterName ? characterName.trim() : "친구",
+            characterName: characterName.trim(),
+            tier: "Free",
+            credits: 10, // Generous start
             created_at: new Date().toISOString()
         };
 
-        if (email) {
-            newUser.email = email.trim().toLowerCase();
-        }
-
         try {
-            // Strategy 1: Server Action
-            try {
-                const result = await performMagic({ action: 'register', userData: newUser });
-                if (result.success) {
-                    onLogin({ ...result.data, characterName: result.data.character_name });
-                    return;
-                } else if (result.code === '23505') {
-                    return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
-                }
-            } catch (actionErr) {
-                console.warn("Strategy 1 (Register Action) failed", actionErr);
-            }
+            // STEP 1: Immediate Success via Local Storage (Zero Latency UX)
+            localStorage.setItem("magic_user", JSON.stringify(newUser));
+            // Also keep as backup for this specific name
+            localStorage.setItem(`offline_user_${newUser.name}`, JSON.stringify(newUser));
 
-            // Strategy 2: Direct Fallback
-            const { data, error } = await supabase
+            // STEP 2: Background Sync to Supabase
+            // We don't 'await' it to avoid blocking the user if network is bad
+            supabase
                 .from('magic_users')
-                .insert([newUser])
-                .select()
-                .single();
+                .insert([{
+                    id: newUser.id,
+                    name: newUser.name,
+                    age: newUser.age,
+                    gender: newUser.gender,
+                    tier: newUser.tier,
+                    credits: newUser.credits,
+                    character: newUser.character,
+                    character_name: newUser.characterName,
+                    created_at: newUser.created_at
+                }])
+                .then(({ error }) => {
+                    if (error) {
+                        console.warn("Background DB sync failed (might be adblock)", error);
+                        // We don't tell the user, they are already 'logged in' locally.
+                    }
+                });
 
-            if (error) {
-                if (error.code === '23505') {
-                    return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
-                }
-                throw error;
-            }
+            // STEP 3: Proceed to Main Screen
+            onLogin(newUser);
 
-            onLogin({ ...data, characterName: data.character_name });
-        } catch (err: any) {
-            console.error("Join failed overall", err);
-            const diag = `V1.4, H: ${window.location.host}, E: ${err.message}`;
-            alert(`기록장에 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄\n(진단: ${diag})`);
+        } catch (err) {
+            console.error("Critical join error", err);
+            alert("마법 가루가 부족한지 가입이 안돼. 일단 마스터 모드로 입장해볼까?");
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    const nextStep = () => {
+        if (!name) return alert("친구! 이름을 먼저 알려줘! 😊");
+        setMode("avatar_setup");
+    };
+
+    const buttonStyle = {
+        padding: "1rem 2rem",
+        fontSize: "1.2rem",
+        borderRadius: "20px",
+        border: "none",
+        cursor: "pointer",
+        fontWeight: "bold",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+        width: "100%",
+        transition: "all 0.3s ease",
+    };
+
+    const inputStyle = {
+        width: "100%",
+        padding: "1rem",
+        fontSize: "1.1rem",
+        borderRadius: "12px",
+        border: "2px solid #E0E0E0",
+        marginBottom: "1rem",
+        outline: "none",
+        textAlign: "center" as const,
+        color: "#333",
     };
 
     return (
@@ -188,292 +187,197 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "linear-gradient(135deg, #FFF9F0 0%, #FFF3E6 100%)",
-            padding: "1.5rem"
+            background: "linear-gradient(135deg, #FAD0C4 0%, #FFD1FF 100%)",
+            padding: "20px",
+            fontFamily: "'Gamja Flower', cursive"
         }}>
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="card"
-                style={{
-                    maxWidth: "500px",
-                    width: "100%",
-                    textAlign: "center",
-                    padding: "3rem 2rem",
-                    border: "6px solid #A29BFE",
-                    background: "white",
-                    borderRadius: "40px",
-                    boxShadow: "0 20px 50px rgba(108, 92, 231, 0.1)"
-                }}
-            >
-                <div style={{ marginBottom: "1rem" }}>
-                    {mode === "landing" ? (
-                        <img src="/stella_char.png" alt="Stella" style={{ width: "120px", height: "120px", borderRadius: "30px", objectFit: "cover", border: "4px solid #A29BFE", margin: "0 auto" }} />
-                    ) : (
-                        <img src={characterMap[selectedCharacter]} alt="Pet" style={{ width: "120px", height: "120px", borderRadius: "30px", objectFit: "cover", border: "4px solid #A29BFE", margin: "0 auto" }} />
-                    )}
-                </div>
-
-                <AnimatePresence mode="wait">
-                    {mode === "landing" && (
-                        <motion.div
-                            key="landing"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 1.1, opacity: 0 }}
-                        >
-                            <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7", marginBottom: "1rem" }}>안녕! 마법 나라에 <br />온 걸 환영해 ✨</h1>
-                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "1rem" }}>
-                                오늘은 어떤 마법을 부려볼까? <br />
-                                우리 같이 여행을 떠나보자! ✨
-                            </p>
-                            <div style={{
-                                background: "#f9f9ff",
-                                padding: "0.8rem 1.5rem",
-                                borderRadius: "16px",
-                                border: "2px solid #A29BFE",
-                                marginBottom: "1.5rem",
-                                fontSize: "0.95rem",
-                                color: "#6C5CE7",
-                                fontWeight: "bold",
-                                position: "relative"
-                            }}>
-                                👶 만 4-10세 어린이를 위한 AI 놀이터
-                                <span style={{ position: "absolute", bottom: "-15px", right: "10px", fontSize: "0.6rem", opacity: 0.5 }}>v1.4-magic-gate</span>
-                            </div>
-
-                            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="button"
-                                    style={{ ...buttonStyle, background: "linear-gradient(45deg, #FF6B9D, #FF8C42)" }}
-                                    onClick={() => setMode("avatar_setup")}
-                                >
-                                    처음 왔어? (모험 시작하기! ✨)
-                                </motion.button>
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="button"
-                                    style={{ ...buttonStyle, background: "white", color: "#6C5CE7", border: "2px solid #6C5CE7" }}
-                                    onClick={() => setMode("login")}
-                                >
-                                    이미 친구야! (로그인하기 🪄)
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    )}
-                    {mode === "avatar_setup" && (
-                        <motion.div
-                            key="avatar"
-                            initial={{ x: 20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -20, opacity: 0 }}
-                        >
-                            <h1 style={{ fontSize: "2rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>나의 AI 친구를 불러볼까?</h1>
-                            <p style={{ color: "#666", marginBottom: "2rem" }}>마법사 친구와 이름을 정해줘!</p>
-
-                            <div style={{ textAlign: "left" }}>
-                                <label style={labelStyle}>내 이름은요</label>
-                                <input type="text" placeholder="예: 무적철수" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-
-                                <label style={labelStyle}>마법사 친구의 이름은요</label>
-                                <input
-                                    type="text"
-                                    placeholder="예: 반짝이, 우주대장"
-                                    value={characterName}
-                                    onChange={(e) => setCharacterName(e.target.value)}
-                                    style={{ ...inputStyle, border: "3px solid #6C5CE7", background: "white" }}
-                                />
-
-                                <label style={labelStyle}>🌟 함께할 친구 고르기</label>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
-                                    {[
-                                        { id: "stella", image: "/pet_puppy.png" },
-                                        { id: "leo", image: "/pet_kitten.png" },
-                                        { id: "pinky", image: "/pet_panda.png" },
-                                        { id: "bolt", image: "/pet_rabbit.png" }
-                                    ].map(char => (
-                                        <motion.div
-                                            key={char.id}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => setSelectedCharacter(char.id)}
-                                            style={{
-                                                padding: "1.5rem",
-                                                borderRadius: "20px",
-                                                border: `3px solid ${selectedCharacter === char.id ? "#6C5CE7" : "#eee"}`,
-                                                background: selectedCharacter === char.id ? "rgba(108, 92, 231, 0.1)" : "white",
-                                                cursor: "pointer",
-                                                textAlign: "center",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center"
-                                            }}
-                                        >
-                                            <img src={char.image} alt={char.id} style={{ width: "80px", height: "80px", borderRadius: "20px", objectFit: "cover" }} />
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="button"
-                                style={buttonStyle}
-                                onClick={() => {
-                                    if (!name || !characterName) return alert("너의 이름과 친구의 이름을 알려줘야 모험을 떠날 수 있어! ✨");
-                                    setMode("choose");
-                                }}
-                            >
-                                준비 완료! 선택창으로 가기 →
-                            </motion.button>
-                            <button onClick={() => setMode("landing")} style={{ width: "100%", padding: "0.8rem", fontSize: "1.1rem", background: "#f1f2f6", color: "#666", borderRadius: "16px", marginTop: "1rem", border: "none", cursor: "pointer" }}>뒤로 가기</button>
-                        </motion.div>
-                    )}
-
-                    {mode === "choose" && (
-                        <motion.div
-                            key="choose"
-                            initial={{ x: 20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -20, opacity: 0 }}
-                        >
-                            <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7" }}>반가워, {name}야!</h1>
-                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2.5rem" }}>AI 친구 **{characterName}**랑 무엇을 할까?</p>
-
-                            <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    className="button"
-                                    style={{ ...buttonStyle, background: "#6C5CE7" }}
-                                    onClick={() => setShowParentalGate(true)}
-                                >
-                                    기록장에 저장하고 모험 시작! ✨
-                                </motion.button>
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    className="button"
-                                    style={{ ...buttonStyle, background: "white", color: "#6C5CE7", border: "2px solid #6C5CE7" }}
-                                    onClick={() => setMode("avatar_setup")}
-                                >
-                                    AI 친구 다시 정하기 🔄
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {mode === "login" && (
-                        <motion.div
-                            key="login"
-                            initial={{ x: 20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -20, opacity: 0 }}
-                        >
-                            <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7", marginBottom: "1rem" }}>오랜만이야 히어로!</h1>
-                            <input
-                                type="text"
-                                placeholder="너의 이름을 입력해줘"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                style={inputStyle}
-                                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                            />
-                            <motion.button onClick={handleLogin} style={buttonStyle}>연구소 입장! 🪄</motion.button>
-                            <button onClick={() => setMode("landing")} style={{ width: "100%", padding: "0.8rem", fontSize: "1.1rem", background: "#f1f2f6", color: "#666", borderRadius: "16px", marginTop: "1rem", border: "none", cursor: "pointer" }}>뒤로 가기</button>
-                        </motion.div>
-                    )}
-
-                    {mode === "join" && (
-                        <motion.div
-                            key="join"
-                            initial={{ x: 20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -20, opacity: 0 }}
-                        >
-                            <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "1rem" }}>우리들의 모험 기록장</h1>
-                            <div style={{ textAlign: "left" }}>
-                                {/* Email and Referral removed for maximum simplicity as requested by CEO */}
-                                <div style={{ display: "flex", gap: "1rem" }}>
-                                    <div style={{ flex: 1 }}>
-                                        <label style={labelStyle}>나이 (4-10세)</label>
-                                        <input
-                                            type="number"
-                                            min="4"
-                                            max="10"
-                                            value={age}
-                                            onChange={(e) => setAge(e.target.value)}
-                                            style={inputStyle}
-                                            placeholder="4-10세"
-                                        />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <label style={labelStyle}>성별</label>
-                                        <select value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
-                                            <option value="">선택</option>
-                                            <option value="male">남자아이</option>
-                                            <option value="female">여자아이</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                {/* Referral code removed for simplicity as requested */}
-
-                                <div style={{
-                                    marginTop: "1.5rem",
-                                    padding: "1.5rem",
-                                    background: "#fff",
-                                    borderRadius: "20px",
-                                    border: "2px solid #6C5CE7",
-                                    marginBottom: "1rem"
-                                }}>
-                                    <label style={{ display: "flex", alignItems: "flex-start", gap: "0.8rem", cursor: "pointer" }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={privacyConsent}
-                                            onChange={(e) => setPrivacyConsent(e.target.checked)}
-                                            style={{
-                                                width: "20px",
-                                                height: "20px",
-                                                marginTop: "0.2rem",
-                                                cursor: "pointer",
-                                                accentColor: "#6C5CE7"
-                                            }}
-                                        />
-                                        <div style={{ flex: 1, fontSize: "0.95rem", color: "#2d3436", lineHeight: "1.6" }}>
-                                            부모님! 우리 아이의 정보를 안전하게 지켜주기로 약속할게요.
-                                            <a
-                                                href="/privacy"
-                                                target="_blank"
-                                                style={{ color: "#6C5CE7", textDecoration: "underline", fontWeight: "bold", marginLeft: "5px" }}
-                                            >
-                                                [약속 확인하기]
-                                            </a>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-                            <motion.button onClick={handleJoin} style={{ ...buttonStyle, background: "#6BCB77" }}>기록 완료! 모험 떠나기 🚀</motion.button>
-                            <button onClick={() => setMode("choose")} style={{ width: "100%", padding: "0.8rem", fontSize: "1.1rem", background: "#f1f2f6", color: "#666", borderRadius: "16px", marginTop: "1rem", border: "none", cursor: "pointer" }}>뒤로 가기</button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {showParentalGate && (
-                    <ParentalGateMath
-                        onSuccess={() => {
-                            setShowParentalGate(false);
-                            setMode("join");
+            <AnimatePresence mode="wait">
+                {mode === "landing" && (
+                    <motion.div
+                        key="landing"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 1.1, opacity: 0 }}
+                        style={{
+                            background: "rgba(255, 255, 255, 0.95)",
+                            padding: "3rem",
+                            borderRadius: "32px",
+                            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                            textAlign: "center",
+                            maxWidth: "450px",
+                            backdropFilter: "blur(10px)",
+                            border: "4px solid #fff"
                         }}
-                        onCancel={() => setShowParentalGate(false)}
-                    />
+                    >
+                        <motion.img
+                            src="/images/stella_char.webp"
+                            alt="Stella"
+                            style={{ width: "120px", borderRadius: "50%", marginBottom: "1.5rem", border: "5px solid #FFD1FF" }}
+                            animate={{ y: [0, -10, 0] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                        />
+                        <h1 style={{ fontSize: "2.4rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>스텔라 마법 연구소</h1>
+                        <p style={{ color: "#888", marginBottom: "2rem", fontSize: "1.1rem" }}>
+                            세상에서 단 하나뿐인 <br /> 너만의 동화를 만들어보자! ✨
+                        </p>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                style={{ ...buttonStyle, background: "#6C5CE7", color: "white" }}
+                                onClick={() => setMode("avatar_setup")}
+                            >
+                                처음 왔어요! (모험 시작 ✨)
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                style={{ ...buttonStyle, background: "white", color: "#6C5CE7", border: "3px solid #6C5CE7" }}
+                                onClick={() => setMode("login")}
+                            >
+                                이미 친구예요! (다시 입장 🪄)
+                            </motion.button>
+                        </div>
+                    </motion.div>
                 )}
 
-                <p style={{ marginTop: "2rem", fontSize: "0.85rem", opacity: 0.5, color: "#666" }}>
-                    세상의 모든 어린이를 위한 안전하고 가치 있는 AI 연구소
-                </p>
-            </motion.div>
+                {(mode === "login" || mode === "avatar_setup") && (
+                    <motion.div
+                        key="form"
+                        initial={{ x: 50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -50, opacity: 0 }}
+                        style={{
+                            background: "white",
+                            padding: "2.5rem",
+                            borderRadius: "32px",
+                            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                            width: "100%",
+                            maxWidth: "400px",
+                            textAlign: "center"
+                        }}
+                    >
+                        <h2 style={{ color: "#6C5CE7", marginBottom: "1.5rem" }}>
+                            {mode === "login" ? "다시 만나서 반가워! 👋" : "너의 이름을 알려줘! ✨"}
+                        </h2>
+
+                        <input
+                            type="text"
+                            placeholder="예: 예쁜별"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            style={inputStyle}
+                        />
+
+                        {mode === "avatar_setup" && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div style={{ marginBottom: "1.5rem" }}>
+                                    <p style={{ color: "#888", marginBottom: "1rem" }}>너의 나이는 몇 살이야?</p>
+                                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+                                        {[4, 5, 6, 7, 8, 9, 10].map(n => (
+                                            <button
+                                                key={n}
+                                                onClick={() => setAge(n.toString())}
+                                                style={{
+                                                    padding: "0.5rem 1rem",
+                                                    borderRadius: "10px",
+                                                    border: age === n.toString() ? "2px solid #6C5CE7" : "1px solid #ddd",
+                                                    backgroundColor: age === n.toString() ? "#F3F0FF" : "white",
+                                                    cursor: "pointer"
+                                                }}
+                                            >
+                                                {n}세
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div style={{ display: "flex", gap: "10px", marginBottom: "1.5rem" }}>
+                                    <motion.button
+                                        onClick={() => setGender("여자아이")}
+                                        style={{ flex: 1, padding: "0.8rem", borderRadius: "12px", border: gender === "여자아이" ? "2px solid #FF7597" : "1px solid #ddd", background: gender === "여자아이" ? "#FFF0F3" : "white" }}
+                                    >👧 공주님</motion.button>
+                                    <motion.button
+                                        onClick={() => setGender("남자아이")}
+                                        style={{ flex: 1, padding: "0.8rem", borderRadius: "12px", border: gender === "남자아이" ? "2px solid #4A90E2" : "1px solid #ddd", background: gender === "남자아이" ? "#F0F7FF" : "white" }}
+                                    >👦 왕자님</motion.button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <button
+                                onClick={() => setMode("landing")}
+                                style={{ ...buttonStyle, background: "#eee", color: "#666", flex: 1 }}
+                            >뒤로</button>
+                            <button
+                                onClick={mode === "login" ? handleLogin : () => setMode("join")}
+                                style={{ ...buttonStyle, background: "#6C5CE7", color: "white", flex: 2 }}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "로딩중..." : (mode === "login" ? "입장하기" : "다음으로")}
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {mode === "join" && (
+                    <motion.div
+                        key="join"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                            background: "white",
+                            padding: "2.5rem",
+                            borderRadius: "32px",
+                            maxWidth: "500px",
+                            textAlign: "center"
+                        }}
+                    >
+                        <h2 style={{ color: "#6C5CE7", marginBottom: "1rem" }}>어떤 친구와 함께할까? 🐾</h2>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
+                            {characters.map(c => (
+                                <div
+                                    key={c.id}
+                                    onClick={() => setSelectedCharacter(c.id)}
+                                    style={{
+                                        padding: "1rem",
+                                        borderRadius: "20px",
+                                        border: selectedCharacter === c.id ? "3px solid #6C5CE7" : "1px solid #eee",
+                                        cursor: "pointer",
+                                        background: selectedCharacter === c.id ? "#F3F0FF" : "white"
+                                    }}
+                                >
+                                    <img src={c.img} alt={c.name} style={{ width: "60px", borderRadius: "10px", marginBottom: "0.5rem" }} />
+                                    <p style={{ fontWeight: "bold" }}>{c.name}</p>
+                                    <p style={{ fontSize: "0.8rem", color: "#888" }}>{c.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <input
+                            type="text"
+                            placeholder="이 친구의 이름은?"
+                            value={characterName}
+                            onChange={(e) => setCharacterName(e.target.value)}
+                            style={inputStyle}
+                        />
+
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", marginBottom: "1rem" }}>
+                            <input type="checkbox" id="consent" checked={privacyConsent} onChange={(e) => setPrivacyConsent(e.target.checked)} />
+                            <label htmlFor="consent" style={{ fontSize: "0.9rem", color: "#666" }}>부모님! 아이의 정보를 지켜줄게요 🙏</label>
+                        </div>
+
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <button onClick={() => setMode("avatar_setup")} style={{ ...buttonStyle, background: "#eee", color: "#666", flex: 1 }}>뒤고</button>
+                            <button onClick={handleJoin} style={{ ...buttonStyle, background: "#6C5CE7", color: "white", flex: 2 }}>가입 완료!</button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <div style={{ position: "absolute", bottom: "20px", fontSize: "0.8rem", color: "#aaa" }}>
+                v2.0-magic-offline-first
+            </div>
         </div>
     );
 }
