@@ -10,13 +10,15 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [illustrations, setIllustrations] = useState<{ [key: number]: string }>({});
 
-    const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
-        ? ""
-        : "https://kids-ai-lab.vercel.app";
+    const API_BASE = "";
 
-    const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
+    const isOutOfCredits = user?.tier !== "Pro" && (user?.credits ?? 0) <= 0;
 
     const generateStory = async () => {
+        console.log("Generating story for:", prompt);
+        console.log("User data:", user);
+        console.log("isOutOfCredits:", isOutOfCredits);
+
         if (!prompt) return;
         if (isOutOfCredits) return;
         setIsGenerating(true);
@@ -43,9 +45,10 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
             // Pre-generate the first scene's illustration if story exists
             const scenes = data.story.split('\n\n');
             if (scenes.length > 0) {
-                const firstScene = scenes[0].replace(/\[.*?\]\n/, "");
+                const firstScene = scenes[0].replace(/\[.*?\]/g, "").replace(/\.+$/, "").trim(); // Remove trailing periods
                 const seed = Math.floor(Math.random() * 100000);
-                setIllustrations({ 0: `https://image.pollinations.ai/prompt/${encodeURIComponent(firstScene + " in dreamlike 3d disney style, bright colors, friendly characters")}?width=800&height=400&nologo=true&seed=${seed}` });
+                const firstImg = `https://image.pollinations.ai/prompt/${encodeURIComponent(firstScene + " in dreamlike 3d disney style, bright colors, friendly characters")}?width=1024&height=1024&nologo=true&seed=${seed}`;
+                setIllustrations({ 0: firstImg });
             }
 
             setIsGenerating(false);
@@ -57,46 +60,49 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
         }
     };
 
-    const speak = (text: string) => {
-        if (!window.speechSynthesis) return;
-
+    const speak = async (text: string) => {
         // If already speaking, stop it
         if (isSpeaking) {
-            window.speechSynthesis.cancel();
+            const audioElements = document.getElementsByTagName('audio');
+            for (let i = 0; i < audioElements.length; i++) {
+                if (audioElements[i].id === 'stella-voice') {
+                    audioElements[i].pause();
+                    audioElements[i].remove();
+                }
+            }
             setIsSpeaking(false);
             return;
         }
 
-        window.speechSynthesis.cancel();
+        setIsSpeaking(true);
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        try {
+            const response = await fetch(`${API_BASE}/api/tts`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
 
-        // Get available voices
-        const voices = window.speechSynthesis.getVoices();
+            if (!response.ok) throw new Error("TTS failed");
 
-        // Try to find young female Korean voice
-        // Priority: Google > Microsoft > Any female Korean voice
-        const youngFemaleVoice = voices.find(v =>
-            v.lang.startsWith('ko') &&
-            (v.name.includes('Yuna') || v.name.includes('Sora') || v.name.toLowerCase().includes('female'))
-        ) || voices.find(v =>
-            v.lang.startsWith('ko') && v.name.includes('Google')
-        ) || voices.find(v => v.lang.startsWith('ko'));
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.id = 'stella-voice';
 
-        if (youngFemaleVoice) {
-            utterance.voice = youngFemaleVoice;
+            audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(url);
+            };
+
+            audio.play();
+        } catch (error) {
+            console.error("TTS Error:", error);
+            setIsSpeaking(false);
+            // Fallback to browser TTS if ElevenLabs fails (optional, but user wants to delete robotic)
+            // For now, let's just log and show error
+            alert("목소리 마법이 잠시 약해졌어요. 잠시 후에 다시 시도해볼까요?");
         }
-
-        utterance.lang = "ko-KR";
-        utterance.rate = 0.9; // Slower for child storytelling
-        utterance.pitch = 1.5; // Much higher pitch for young girl voice
-        utterance.volume = 1.0;
-
-        utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-
-        window.speechSynthesis.speak(utterance);
     };
 
     const storyPages = story ? story.split('\n\n') : [];
@@ -104,12 +110,16 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
         if (!illustrations[newPage]) {
-            const pageText = storyPages[newPage].replace(/\[.*?\]\n/, "");
-            const seed = Math.floor(Math.random() * 100000);
-            setIllustrations(prev => ({
-                ...prev,
-                [newPage]: `https://image.pollinations.ai/prompt/${encodeURIComponent(pageText + " in dreamlike 3d disney style, bright colors, friendly characters")}?width=800&height=400&nologo=true&seed=${seed}`
-            }));
+            const pageText = storyPages[newPage]?.replace(/\[.*?\]/g, "").trim() || "";
+            if (pageText) {
+                const sanitizedText = pageText.replace(/\.+$/, "").trim(); // Remove trailing periods
+                const seed = Math.floor(Math.random() * 100000);
+                const newIllustrationUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(sanitizedText + " in dreamlike 3d disney style, bright colors, friendly characters")}?width=1024&height=1024&nologo=true&seed=${seed}`;
+                setIllustrations(prev => ({
+                    ...prev,
+                    [newPage]: newIllustrationUrl
+                }));
+            }
         }
     };
 
@@ -133,6 +143,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="예: 우주로 간 고양이"
+                    className="input-magic"
                     style={{
                         width: "100%",
                         padding: "1.2rem",
@@ -141,7 +152,8 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                         fontSize: "1.2rem",
                         marginBottom: "1.5rem",
                         outline: "none",
-                        background: "#fff"
+                        background: "#fff",
+                        transition: "all 0.3s ease"
                     }}
                     onKeyPress={(e) => e.key === 'Enter' && generateStory()}
                 />
@@ -150,11 +162,15 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                     onClick={generateStory}
                     disabled={isGenerating || isOutOfCredits}
                     style={{
-                        width: "100%", justifyContent: "center", padding: "1.2rem", fontSize: "1.3rem",
-                        background: isOutOfCredits ? "#ccc" : "var(--primary)"
+                        width: "100%",
+                        justifyContent: "center",
+                        padding: "1.2rem",
+                        fontSize: "1.3rem",
+                        background: isOutOfCredits ? "#ccc" : "linear-gradient(45deg, #FF8C42, #FFB347)",
+                        boxShadow: isOutOfCredits ? "none" : "0 8px 20px rgba(255, 140, 66, 0.3)"
                     }}
                 >
-                    {isGenerating ? "마법 지팡이 휘두르는 중... 🪄" : isOutOfCredits ? "마법 에너지가 부족해! 🏜️" : "내 동화책 만들기!"}
+                    {isGenerating ? "마법 지팡이 휘두르는 중... 🪄" : isOutOfCredits ? "마법 에너지가 부족해! 🏜️" : "✨ 내 동화책 만들기!"}
                 </button>
                 {isOutOfCredits && (
                     <div style={{
@@ -295,7 +311,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                                     boxShadow: "0 5px 15px rgba(255, 159, 67, 0.3)"
                                 }}
                             >
-                                {isSpeaking ? "⏹️ 목소리 멈추기" : "🎙️ 어린이 목소리로 듣기 (TTS)"}
+                                {isSpeaking ? "⏹️ 목소리 멈추기" : "🎙️ 마법 아이 목소리로 듣기 (ElevenLabs)"}
                             </button>
                         </div>
                     </motion.div>

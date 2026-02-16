@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "../lib/supabase";
 import ParentalGate from "./ParentalGate";
 import ParentalGateMath from "./ParentalGateMath";
 
@@ -71,19 +72,31 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [showParentalGate, setShowParentalGate] = useState(false);
     const [privacyConsent, setPrivacyConsent] = useState(false);
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         if (!name) return alert("친구! 이름을 알려줘야 마법이 시작돼! 😊");
 
         const adminNames = ["스텔라", "stella", "admin", "마스터", "master"];
         const isAdmin = adminNames.includes(name.toLowerCase());
 
         if (!isAdmin) {
-            const savedUsers = JSON.parse(localStorage.getItem("kids_ai_users") || "{}");
-            if (!savedUsers[name]) {
-                return alert("어라? 기록장에서 이름을 찾을 수 없어. 회원가입을 먼저 해줄래? ✨");
+            try {
+                // Try to find user by name in Supabase
+                const { data, error } = await supabase
+                    .from('magic_users')
+                    .select('*')
+                    .eq('name', name.trim())
+                    .single();
+
+                if (error || !data) {
+                    return alert("어라? 기록장에서 이름을 찾을 수 없어. 회원가입을 먼저 해줄래? ✨");
+                }
+
+                onLogin(data);
+                return;
+            } catch (err) {
+                console.error("Login failed", err);
+                return alert("연구소 통신에 문제가 생겼어. 다시 해볼까? ✨");
             }
-            onLogin(savedUsers[name]);
-            return;
         }
 
         onLogin({
@@ -94,7 +107,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         });
     };
 
-    const handleJoin = () => {
+    const handleJoin = async () => {
         if (!name || !email || !age || !gender || !characterName) return alert("모든 정보를 채워줘야 고귀한 히어로가 될 수 있어! ✨");
 
         const ageNum = parseInt(age);
@@ -104,25 +117,43 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
 
-        const newUser: UserProfile = {
-            id: "new-" + Date.now(),
-            name,
+        const newUser = {
+            name: name.trim(),
             email,
-            age,
+            age: ageNum,
             gender,
             tier: "Free",
             credits: referral ? 4 : 3,
             character: selectedCharacter,
-            characterName: characterName
+            character_name: characterName,
+            created_at: new Date().toISOString()
         };
 
-        // Save to mock database (localStorage)
-        const savedUsers = JSON.parse(localStorage.getItem("kids_ai_users") || "{}");
-        savedUsers[name] = newUser;
-        localStorage.setItem("kids_ai_users", JSON.stringify(savedUsers));
+        try {
+            // Save to Supabase
+            const { data, error } = await supabase
+                .from('magic_users')
+                .insert([newUser])
+                .select()
+                .single();
 
-        onLogin(newUser);
-        if (referral) alert(`🎉 친구 추천 보너스 전송 완료!`);
+            if (error) {
+                if (error.code === '23505') {
+                    return alert("이미 있는 히어로 이름이야! 다른 이름을 골라볼까? ✨");
+                }
+                throw error;
+            }
+
+            onLogin({
+                ...data,
+                characterName: data.character_name // mapping snake_case to camelCase for existing code compatibility
+            });
+
+            if (referral) alert(`🎉 친구 추천 보너스 전송 완료!`);
+        } catch (err) {
+            console.error("Join failed", err);
+            alert("기록장에 적는 중에 마법이 꼬였어. 다시 시도해줘! 🪄");
+        }
     };
 
     return (
@@ -212,7 +243,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             <p style={{ color: "#666", marginBottom: "2rem" }}>함께 모험을 떠날 친구를 고르고 이름도 지어줘!</p>
 
                             <div style={{ textAlign: "left" }}>
-                                <label style={labelStyle}>나의 히어로 이름은?</label>
+                                <label style={labelStyle}>나의 이름으로</label>
                                 <input type="text" placeholder="예: 무적철수" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
 
                                 <label style={labelStyle}>활동에 도움 줄 AI 친구 이름 지어주기</label>
@@ -267,7 +298,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             >
                                 준비 완료! 선택창으로 가기 →
                             </motion.button>
-                            <button onClick={() => setMode("landing")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>뒤로 가기</button>
+                            <button onClick={() => setMode("landing")} style={{ width: "100%", padding: "0.8rem", fontSize: "1.1rem", background: "#f1f2f6", color: "#666", borderRadius: "16px", marginTop: "1rem", border: "none", cursor: "pointer" }}>뒤로 가기</button>
                         </motion.div>
                     )}
 
@@ -319,7 +350,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                             />
                             <motion.button onClick={handleLogin} style={buttonStyle}>연구소 입장! 🪄</motion.button>
-                            <button onClick={() => setMode("landing")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>뒤로 가기</button>
+                            <button onClick={() => setMode("landing")} style={{ width: "100%", padding: "0.8rem", fontSize: "1.1rem", background: "#f1f2f6", color: "#666", borderRadius: "16px", marginTop: "1rem", border: "none", cursor: "pointer" }}>뒤로 가기</button>
                         </motion.div>
                     )}
 
@@ -397,7 +428,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 </div>
                             </div>
                             <motion.button onClick={handleJoin} style={{ ...buttonStyle, background: "#6BCB77" }}>기록 완료! 모험 떠나기 🚀</motion.button>
-                            <button onClick={() => setMode("choose")} style={{ background: "none", border: "none", color: "#999", marginTop: "1rem", cursor: "pointer" }}>뒤로 가기</button>
+                            <button onClick={() => setMode("choose")} style={{ width: "100%", padding: "0.8rem", fontSize: "1.1rem", background: "#f1f2f6", color: "#666", borderRadius: "16px", marginTop: "1rem", border: "none", cursor: "pointer" }}>뒤로 가기</button>
                         </motion.div>
                     )}
                 </AnimatePresence>

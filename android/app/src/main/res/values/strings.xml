@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Stella Magic Lab</string>
+    <string name="title_activity_main">Stella Magic Lab</string>
+    <string name="package_name">com.thehambest.stella</string>
+    <string name="custom_url_scheme">com.thehambest.stella</string>
+</resources>

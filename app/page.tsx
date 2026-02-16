@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "../lib/supabase";
 import StoryMagic from "../components/StoryMagic";
 import MagicCanvas from "../components/MagicCanvas";
 import MagicMotion from "../components/MagicMotion";
@@ -9,10 +10,11 @@ import HeroCenter from "../components/HeroCenter";
 import AIDisclosure from "../components/AIDisclosure";
 import Settings from "../components/Settings";
 import AIChat from "../components/AIChat";
+import AdminDashboard from "../components/AdminDashboard";
 
 export default function Home() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion" | "settings" | "chat">("dashboard");
+  const [view, setView] = useState<"dashboard" | "story" | "draw" | "hero" | "motion" | "settings" | "chat" | "admin">("dashboard");
   const [gallery, setGallery] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
   const [showAIDisclosure, setShowAIDisclosure] = useState(false);
@@ -22,7 +24,23 @@ export default function Home() {
     const savedUser = localStorage.getItem("magic_user");
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        setUser(parsed);
+        // Refresh data from Supabase for production consistency
+        if (parsed.id && !parsed.id.startsWith('admin')) {
+          supabase
+            .from('magic_users')
+            .select('*')
+            .eq('id', parsed.id)
+            .single()
+            .then(({ data }) => {
+              if (data) {
+                const updated = { ...data, characterName: data.character_name };
+                setUser(updated);
+                localStorage.setItem("magic_user", JSON.stringify(updated));
+              }
+            });
+        }
       } catch (e) {
         console.error("Session recovery failed", e);
       }
@@ -75,11 +93,22 @@ export default function Home() {
   const handleBack = () => setView("dashboard");
   const addToGallery = (img: string) => setGallery(prev => [img, ...prev]);
 
-  const decrementCredits = () => {
+  const decrementCredits = async () => {
     if (user && user.credits > 0 && user.tier !== "Pro") {
-      const newUser = { ...user, credits: user.credits - 1 };
+      const newCredits = user.credits - 1;
+      const newUser = { ...user, credits: newCredits };
       setUser(newUser);
       localStorage.setItem("magic_user", JSON.stringify(newUser));
+
+      // Persist to Supabase
+      if (user.id && !user.id.startsWith('admin')) {
+        const { error } = await supabase
+          .from('magic_users')
+          .update({ credits: newCredits })
+          .eq('id', user.id);
+
+        if (error) console.error("Failed to sync credits", error);
+      }
     }
   };
 
@@ -96,9 +125,18 @@ export default function Home() {
       case "hero": return <HeroCenter onBack={handleBack} user={user} />;
       case "settings": return <Settings onBack={handleBack} user={user} onUpdateUser={(updated) => setUser(updated)} />;
       case "chat": return <AIChat onBack={handleBack} user={user} />;
+      case "admin": return <AdminDashboard onBack={handleBack} />;
       default: return (
         <>
           <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem" }}>
+            {user?.name && ["스텔라", "stella", "admin"].includes(user.name.toLowerCase()) && (
+              <button
+                onClick={() => setView("admin")}
+                style={{ position: "fixed", top: "10px", right: "10px", zIndex: 100, background: "black", color: "white", padding: "5px 10px", borderRadius: "5px", fontSize: "0.7rem" }}
+              >
+                ADMIN DASHBOARD
+              </button>
+            )}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -114,39 +152,56 @@ export default function Home() {
                   borderRadius: "20px",
                   color: "white",
                   fontWeight: "bold",
-                  boxShadow: "0 4px 10px rgba(255, 140, 66, 0.3)",
+                  boxShadow: "0 4px 15px rgba(255, 140, 66, 0.4)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "5px"
-                }}>
-                  <span>💎 마법 에너지: {user.tier === "Pro" ? "무제한" : user.credits}</span>
+                  gap: "5px",
+                  position: "relative",
+                  overflow: "hidden"
+                }}
+                  className={user.tier === "Pro" ? "animate-shiny" : ""}
+                >
+                  <span style={{ position: "relative", zIndex: 1 }}>💎 마법 에너지: {user.tier === "Pro" ? "무제한" : user.credits}</span>
                 </div>
               </div>
             </motion.div>
             <div style={{ display: "flex", gap: "1rem" }}>
-              <button className="button" style={{
-                fontSize: "0.95rem",
-                padding: "0.6rem 1.5rem",
-                background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
-                color: "white",
-                border: "none"
-              }} onClick={() => setView("settings")}>⚙️ 설정</button>
-              <button className="button" style={{
-                fontSize: "0.95rem",
-                padding: "0.6rem 1.5rem",
-                background: "white",
-                color: "#666",
-                border: "2px solid #eee"
-              }} onClick={handleLogout}>Logout</button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="button" style={{
+                  fontSize: "0.95rem",
+                  padding: "0.6rem 1.5rem",
+                  background: "linear-gradient(45deg, #A29BFE, #6C5CE7)",
+                  color: "white",
+                  border: "none",
+                  boxShadow: "0 4px 15px rgba(108, 92, 231, 0.3)"
+                }} onClick={() => setView("settings")}>⚙️ 설정</motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="button" style={{
+                  fontSize: "0.95rem",
+                  padding: "0.6rem 1.5rem",
+                  background: "white",
+                  color: "#666",
+                  border: "2px solid #eee"
+                }} onClick={handleLogout}>Logout</motion.button>
             </div>
-          </nav>
+          </nav >
 
           <header style={{ textAlign: "center", marginBottom: "5rem" }}>
             <motion.h1
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{ fontSize: "4.5rem", marginBottom: "1rem", color: "#6C5CE7" }}
-              className="animate-pop"
+              style={{
+                fontSize: "4.5rem",
+                marginBottom: "1rem",
+                color: "#6C5CE7",
+                fontFamily: "Fredoka, sans-serif",
+                textShadow: "0 10px 20px rgba(108, 92, 231, 0.2)"
+              }}
+              className="animate-float"
             >
               Hero Magic Lab 🚀
             </motion.h1>
@@ -184,6 +239,8 @@ export default function Home() {
                   hidden: { y: 30, opacity: 0 },
                   visible: { y: 0, opacity: 1 }
                 }}
+                whileHover={{ y: -15, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="card"
                 style={{
                   borderBottom: `12px solid ${item.color}`,
@@ -191,7 +248,9 @@ export default function Home() {
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  padding: "2.5rem"
+                  padding: "2.5rem",
+                  position: "relative",
+                  overflow: "hidden"
                 }}
                 onClick={() => setView(item.id as any)}
               >

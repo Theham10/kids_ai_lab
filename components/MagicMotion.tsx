@@ -62,12 +62,11 @@ export default function MagicMotion({
                     <motion.img
                         {...commonProps}
                         animate={{
-                            scaleX: [1, 1.25, 0.75, 1.15, 1],
-                            scaleY: [1, 0.75, 1.25, 0.85, 1],
-                            borderRadius: ["32px", "60px", "20px", "32px"],
-                            rotate: [0, -5, 5, 0]
+                            scaleX: [1, 1.1, 0.9, 1.05, 1],
+                            scaleY: [1, 0.9, 1.1, 0.95, 1],
+                            borderRadius: ["32px", "40px", "24px", "32px"]
                         }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     />
                 );
             case "stars":
@@ -75,12 +74,8 @@ export default function MagicMotion({
                     <div style={{ width: "100%", height: "100%", position: "relative" }}>
                         <motion.img
                             {...commonProps}
-                            animate={{
-                                scale: [1, 1.05, 1],
-                                rotate: [0, 1, -1, 0],
-                                filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"]
-                            }}
-                            transition={{ duration: 3, repeat: Infinity }}
+                            animate={{ scale: [1, 1.02, 1], rotate: [0, 1, -1, 0] }}
+                            transition={{ duration: 5, repeat: Infinity }}
                         />
                         {/* Flying Stars Effect */}
                         {[...Array(15)].map((_, i) => (
@@ -106,12 +101,10 @@ export default function MagicMotion({
                     <motion.img
                         {...commonProps}
                         animate={{
-                            scale: [1, 1.3, 0.9, 1.1, 1],
-                            filter: ["brightness(1) contrast(1)", "brightness(2) contrast(1.5)", "brightness(1) contrast(1)"],
-                            x: [0, -10, 10, -5, 5, 0],
-                            y: [0, 10, -10, 5, -5, 0]
+                            scale: [1, 1.2, 1],
+                            filter: ["brightness(1) contrast(1)", "brightness(1.5) contrast(1.2)", "brightness(1) contrast(1)"],
                         }}
-                        transition={{ duration: 0.5, repeat: Infinity }}
+                        transition={{ duration: 0.8, repeat: Infinity, repeatType: "mirror" }}
                     />
                 );
             case "rainbow":
@@ -119,12 +112,10 @@ export default function MagicMotion({
                     <motion.img
                         {...commonProps}
                         animate={{
-                            filter: ["hue-rotate(0deg) saturate(1) brightness(1)", "hue-rotate(180deg) saturate(3) brightness(1.2)", "hue-rotate(360deg) saturate(1) brightness(1)"],
-                            y: [-25, 25, -25],
-                            scale: [1, 1.1, 1],
-                            rotate: [0, 10, -10, 0]
+                            filter: ["hue-rotate(0deg) saturate(1)", "hue-rotate(360deg) saturate(2)", "hue-rotate(0deg) saturate(1)"],
+                            y: [-10, 10, -10]
                         }}
-                        transition={{ duration: 2.5, repeat: Infinity }}
+                        transition={{ duration: 4, repeat: Infinity }}
                     />
                 );
             default:
@@ -161,24 +152,25 @@ export default function MagicMotion({
                             {magicStyles.map((style) => (
                                 <motion.button
                                     key={style.id}
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={{ y: -5, boxShadow: `0 8px 20px ${style.color}30` }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => setActiveStyle(style.id as MagicStyle)}
                                     style={{
-                                        padding: "1rem",
-                                        borderRadius: "16px",
-                                        border: activeStyle === style.id ? `4px solid ${style.color}` : "2px solid #ddd",
+                                        padding: "1.2rem",
+                                        borderRadius: "20px",
+                                        border: activeStyle === style.id ? `4px solid ${style.color}` : "2px solid #eee",
                                         background: activeStyle === style.id ? `${style.color}15` : "white",
                                         cursor: "pointer",
                                         display: "flex",
                                         flexDirection: "column",
                                         alignItems: "center",
-                                        gap: "5px",
-                                        transition: "all 0.2s"
+                                        gap: "8px",
+                                        transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                                        boxShadow: activeStyle === style.id ? `0 10px 25px ${style.color}40` : "0 4px 10px rgba(0,0,0,0.02)"
                                     }}
                                 >
-                                    <span style={{ fontSize: "2rem" }}>{style.icon}</span>
-                                    <span style={{ fontWeight: "bold", color: activeStyle === style.id ? style.color : "#666" }}>{style.name}</span>
+                                    <span style={{ fontSize: "2.5rem", filter: activeStyle === style.id ? "none" : "grayscale(0.5) opacity(0.7)" }}>{style.icon}</span>
+                                    <span style={{ fontWeight: "bold", fontSize: "0.9rem", color: activeStyle === style.id ? style.color : "#999" }}>{style.name}</span>
                                 </motion.button>
                             ))}
                         </div>
@@ -225,7 +217,7 @@ export default function MagicMotion({
 
                 {/* Right: Magic Preview */}
                 <div style={{
-                    background: "#000",
+                    background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
                     borderRadius: "40px",
                     overflow: "hidden",
                     display: "flex",
@@ -233,7 +225,8 @@ export default function MagicMotion({
                     alignItems: "center",
                     position: "relative",
                     minHeight: "500px",
-                    boxShadow: "0 25px 60px rgba(0,0,0,0.3)"
+                    boxShadow: "inset 0 0 50px rgba(0,0,0,0.05), 0 25px 60px rgba(0,0,0,0.1)",
+                    border: "8px solid white"
                 }}>
                     <AnimatePresence mode="wait">
                         {isWiggling ? (
@@ -264,10 +257,21 @@ export default function MagicMotion({
                                 </div>
                             </div>
                         ) : (
-                            <div style={{ textAlign: "center", color: "rgba(255,255,255,0.2)" }}>
-                                <div style={{ fontSize: "6rem", marginBottom: "1rem" }}>🎩</div>
-                                <p style={{ fontSize: "1.4rem" }}>그림을 골라 마법을 부려봐!</p>
-                            </div>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                style={{ textAlign: "center", color: "#6C5CE7" }}
+                            >
+                                <motion.div
+                                    animate={{ y: [-10, 10, -10] }}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                    style={{ fontSize: "8rem", marginBottom: "1rem", filter: "drop-shadow(0 10px 20px rgba(108, 92, 231, 0.2))" }}
+                                >
+                                    🎨
+                                </motion.div>
+                                <p style={{ fontSize: "1.4rem", fontWeight: "bold" }}>여기에 {user.name}의 그림을 올려줘! ✨</p>
+                                <p style={{ opacity: 0.6, fontSize: "1rem", marginTop: "0.5rem" }}>마법의 붓으로 생명을 불어넣어 줄게.</p>
+                            </motion.div>
                         )}
                     </AnimatePresence>
                 </div>

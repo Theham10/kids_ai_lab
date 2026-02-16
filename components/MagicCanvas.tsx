@@ -22,9 +22,7 @@ export default function MagicCanvas({
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
-    const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
-        ? ""
-        : "https://kids-ai-lab.vercel.app";
+    const API_BASE = "";
 
     const isOutOfCredits = user.tier !== "Pro" && user.credits <= 0;
 
@@ -52,29 +50,30 @@ export default function MagicCanvas({
                 return;
             }
 
-            const finalPrompt = data.refinedPrompt;
+            const finalPrompt = data.refinedPrompt.replace(/```[a-z]*\n/g, "").replace(/```/g, "").replace(/\.+$/, "").trim(); // Remove trailing periods
 
-            // Proceed to image generation steps with the upgraded prompt
+            const uniqueSeed = Date.now() + Math.floor(Math.random() * 1000000);
+            const newImg = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=1024&height=1024&nologo=true&seed=${uniqueSeed}`;
+
+            // Sequential loading simulation for magical effect
             setStatus("sketching");
-            setTimeout(() => {
-                setStatus("coloring");
-                setTimeout(() => {
-                    setStatus("polishing");
-                    setTimeout(() => {
-                        const uniqueSeed = Date.now() + Math.floor(Math.random() * 1000000);
-                        const newImg = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=1024&height=1024&nologo=true&seed=${uniqueSeed}&enhance=true`;
-                        setImageUrl(newImg);
-                        setStatus("done");
-                        onSaveToGallery(newImg);
-                        onDecrementCredits();
-                    }, 800);
-                }, 800);
-            }, 800);
+            await new Promise(r => setTimeout(r, 800));
+            setStatus("coloring");
+            await new Promise(r => setTimeout(r, 800));
+            setStatus("polishing");
+            await new Promise(r => setTimeout(r, 800));
+
+            setImageUrl(newImg);
+            setStatus("done");
+            setIsGenerating(false);
+            onSaveToGallery(newImg);
+            onDecrementCredits();
 
         } catch (error) {
             console.error("Magic Error:", error);
             alert("마법 연결이 조금 불안정해요. 다시 시도해볼까요?");
             setStatus("idle");
+            setIsGenerating(false);
         }
     };
 
@@ -174,21 +173,12 @@ export default function MagicCanvas({
                     </button>
                     {isOutOfCredits && (
                         <div style={{
-                            background: "linear-gradient(135deg, #f9f9ff 0%, #ffffff 100%)",
-                            border: "3px dashed #A29BFE",
-                            padding: "2rem",
-                            borderRadius: "32px",
-                            textAlign: "center",
-                            flex: 1,
-                            boxShadow: "0 10px 30px rgba(108, 92, 231, 0.1)"
+                            background: "#FFF4E5", border: "2px solid #FFAD33", padding: "1.5rem", borderRadius: "20px",
+                            textAlign: "center", flex: 1
                         }}>
-                            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✨</div>
-                            <div style={{ fontWeight: "bold", color: "#6C5CE7", fontSize: "1.3rem", marginBottom: "0.8rem" }}>어머나! 마법 에너지가 다 떨어졌어요!</div>
-                            <div style={{ fontSize: "1.1rem", color: "#666", lineHeight: "1.6" }}>
-                                오늘 하루 동안 정말 멋진 상상을 보여주었네요! <br />
-                                내일 다시 충전되거나, 부모님께 마법 지팡이를 <br />
-                                더 강력하게 업그레이드해달라고 부탁해볼까요? 😊
-                            </div>
+                            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>✨</div>
+                            <div style={{ fontWeight: "bold", color: "#663C00", fontSize: "1.1rem", marginBottom: "0.5rem" }}>오늘의 마법은 여기까지!</div>
+                            <div style={{ fontSize: "0.95rem", color: "#663C00" }}>더 만들고 싶으면 부모님께 말씀드려요 🙋</div>
                         </div>
                     )}
                     {status === "done" && !isOutOfCredits && (
@@ -243,7 +233,7 @@ export default function MagicCanvas({
                                 style={{ height: "100%", background: "linear-gradient(90deg, #6C5CE7, #a29bfe)" }}
                             />
                         </div>
-                        <p style={{ marginTop: "1.5rem", color: "#999", fontSize: "1.1rem" }}>나의 히어로를 위한 아주 특별한 마법 작품을 준비하고 있어요!</p>
+                        <p style={{ marginTop: "1.5rem", color: "#999", fontSize: "1.1rem" }}>스텔라를 위한 아주 특별한 마법 작품을 준비하고 있어요!</p>
                     </motion.div>
                 )}
 

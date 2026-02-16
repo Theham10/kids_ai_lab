@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
+  // API routes won't work with 'output: export' in the local build, 
+  // but for mobile apps, we usually point to a hosted API URL.
+  // We will keep the API routes on Vercel and update the frontend to point to the full URL.
   async headers() {
     return [
       {

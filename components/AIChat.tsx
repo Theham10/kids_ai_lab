@@ -12,6 +12,7 @@ interface Message {
 export default function AIChat({ onBack, user }: { onBack: () => void; user: any }) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
+    const [isSpeaking, setIsSpeaking] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const characterMap: Record<string, string> = {
@@ -19,6 +20,49 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
         leo: "🦁",
         pinky: "🦄",
         bolt: "🤖"
+    };
+
+    const API_BASE = "";
+
+    const speak = async (text: string) => {
+        if (isSpeaking) {
+            const audioElements = document.getElementsByTagName('audio');
+            for (let i = 0; i < audioElements.length; i++) {
+                if (audioElements[i].id === 'stella-voice-chat') {
+                    audioElements[i].pause();
+                    audioElements[i].remove();
+                }
+            }
+            setIsSpeaking(false);
+            return;
+        }
+
+        setIsSpeaking(true);
+
+        try {
+            const response = await fetch(`${API_BASE}/api/tts`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+
+            if (!response.ok) throw new Error("TTS failed");
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.id = 'stella-voice-chat';
+
+            audio.onended = () => {
+                setIsSpeaking(false);
+                URL.revokeObjectURL(url);
+            };
+
+            audio.play();
+        } catch (error) {
+            console.error("TTS Error:", error);
+            setIsSpeaking(false);
+        }
     };
 
     // Auto-scroll to bottom when new messages arrive
@@ -60,9 +104,7 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
 
     const generateAIResponse = async (userMessage: string): Promise<string> => {
         try {
-            const API_BASE = typeof window !== "undefined" && (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost")
-                ? ""
-                : "https://stella-magic.vercel.app";
+            const API_BASE = "";
 
             const response = await fetch(`${API_BASE}/api/chat`, {
                 method: "POST",
@@ -200,14 +242,29 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
                                 boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
                             }}>
                                 <p style={{ margin: 0, fontSize: "1rem", lineHeight: "1.5" }}>{msg.text}</p>
-                                <p style={{
-                                    margin: "0.5rem 0 0 0",
-                                    fontSize: "0.7rem",
-                                    opacity: 0.6,
-                                    textAlign: "right"
-                                }}>
-                                    {msg.timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
+                                    {msg.sender === "ai" && (
+                                        <button
+                                            onClick={() => speak(msg.text)}
+                                            style={{
+                                                background: "none", border: "none", cursor: "pointer",
+                                                fontSize: "0.9rem", color: "#666",
+                                                padding: "0 5px"
+                                            }}
+                                        >
+                                            {isSpeaking ? "⏹️" : "🔈"}
+                                        </button>
+                                    )}
+                                    <p style={{
+                                        margin: 0,
+                                        fontSize: "0.7rem",
+                                        opacity: 0.6,
+                                        flex: 1,
+                                        textAlign: "right"
+                                    }}>
+                                        {msg.timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
                             </div>
                             {msg.sender === "user" && (
                                 <div style={{
