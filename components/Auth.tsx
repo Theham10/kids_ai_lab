@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../lib/supabase";
 import ParentalGate from "./ParentalGate";
 import ParentalGateMath from "./ParentalGateMath";
 
@@ -80,22 +79,24 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!isAdmin) {
             try {
-                // Try to find user by name in Supabase
-                const { data, error } = await supabase
-                    .from('magic_users')
-                    .select('*')
-                    .eq('name', name.trim())
-                    .single();
+                // Call Internal API instead of direct Supabase to bypass ad-blockers
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', name: name.trim() })
+                });
 
-                if (error || !data) {
-                    return alert("어라? 기록장에서 이름을 찾을 수 없어. 회원가입을 먼저 해줄래? ✨");
+                const result = await res.json();
+
+                if (!res.ok) {
+                    return alert("어라? 기록장에서 이름을 찾을 수 없어. 처음 왔다면 가입을 먼저 해볼까? ✨");
                 }
 
-                onLogin(data);
+                onLogin(result.data);
                 return;
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Login failed", err);
-                return alert("연구소 통신에 문제가 생겼어. 다시 해볼까? ✨");
+                return alert("연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨");
             }
         }
 
@@ -134,36 +135,30 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         }
 
         try {
-            // Save to Supabase
-            const { data, error } = await supabase
-                .from('magic_users')
-                .insert([newUser])
-                .select()
-                .single();
+            // Call Internal API to bypass ad-blockers
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'register', userData: newUser })
+            });
 
-            if (error) {
-                if (error.code === '23505') {
+            const result = await res.json();
+
+            if (!res.ok) {
+                if (result.code === '23505') {
                     return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
                 }
-                throw error;
+                throw new Error(result.error || "알 수 없는 오류");
             }
 
             onLogin({
-                ...data,
-                characterName: data.character_name
+                ...result.data,
+                characterName: result.data.character_name
             });
         } catch (err: any) {
             console.error("Join failed", err);
-
-            // Check for common connection errors
-            const isFetchError = err.message?.includes('Failed to fetch') || err.name === 'TypeError';
-
-            if (isFetchError) {
-                alert("기록장에 적는 중에 통신이 끊겼어! (오류: Failed to fetch)\n\n부모님, 혹시 '광고 차단기(AdBlock)'가 켜져 있거나 인터넷이 불안정할 수도 있어요. 잠시 끄고 다시 한번만 시도해 주세요! 🪄");
-            } else {
-                const errorMsg = err.message || "알 수 없는 마법 오류";
-                alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
-            }
+            const errorMsg = err.message || "알 수 없는 마법 오류";
+            alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
         }
     };
 

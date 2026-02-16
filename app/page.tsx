@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../lib/supabase";
 import StoryMagic from "../components/StoryMagic";
 import MagicCanvas from "../components/MagicCanvas";
 import MagicMotion from "../components/MagicMotion";
@@ -27,19 +26,22 @@ export default function Home() {
         const parsed = JSON.parse(savedUser);
         setUser(parsed);
         // Refresh data from Supabase for production consistency
+        // Refresh data via Internal API for production consistency and ad-blocker bypass
         if (parsed.id && !parsed.id.startsWith('admin')) {
-          supabase
-            .from('magic_users')
-            .select('*')
-            .eq('id', parsed.id)
-            .single()
-            .then(({ data }) => {
-              if (data) {
-                const updated = { ...data, characterName: data.character_name };
+          fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'recover', userId: parsed.id })
+          })
+            .then(res => res.json())
+            .then(result => {
+              if (result.data) {
+                const updated = { ...result.data, characterName: result.data.character_name };
                 setUser(updated);
                 localStorage.setItem("magic_user", JSON.stringify(updated));
               }
-            });
+            })
+            .catch(err => console.error("Session recovery background refresh failed", err));
         }
       } catch (e) {
         console.error("Session recovery failed", e);
@@ -97,13 +99,17 @@ export default function Home() {
       localStorage.setItem("magic_user", JSON.stringify(newUser));
 
       // Persist to Supabase
+      // Persist via Internal API to bypass ad-blockers
       if (user.id && !user.id.startsWith('admin')) {
-        const { error } = await supabase
-          .from('magic_users')
-          .update({ credits: newCredits })
-          .eq('id', user.id);
-
-        if (error) console.error("Failed to sync credits", error);
+        fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update-credits', userId: user.id, credits: newCredits })
+        })
+          .then(res => {
+            if (!res.ok) console.error("Failed to sync credits via API");
+          })
+          .catch(err => console.error("Failed to sync credits", err));
       }
     }
   };
