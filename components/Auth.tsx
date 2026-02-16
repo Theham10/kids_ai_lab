@@ -65,7 +65,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     const [email, setEmail] = useState("");
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
-    const [referral, setReferral] = useState("");
+    const [referral, setReferral] = useState(""); // Kept for schema compatibility if needed but hidden in UI
     const [selectedCharacter, setSelectedCharacter] = useState("stella");
     const [characterName, setCharacterName] = useState("");
     const [mode, setMode] = useState<"landing" | "avatar_setup" | "choose" | "login" | "join">("landing");
@@ -108,22 +108,23 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
     };
 
     const handleJoin = async () => {
-        if (!name || !email || !age || !gender || !characterName) return alert("모든 정보를 채워줘야 고귀한 히어로가 될 수 있어! ✨");
+        // Only name and age are strictly required for the kids' experience
+        if (!name || !age || !gender || !characterName) return alert("이름이랑 나이를 알려줘야 우리가 같이 모험을 떠날 수 있어! ✨");
 
         const ageNum = parseInt(age);
         if (isNaN(ageNum) || ageNum < 4 || ageNum > 10) {
-            return alert("꼬마 마법사 연구소는 4세부터 10세까지의 친구들을 위한 곳이에요! 😊");
+            return alert("마법 나라 연구소는 4세부터 10세까지의 친구들을 위한 곳이에요! 😊");
         }
 
         if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
 
         const newUser = {
             name: name.trim(),
-            email,
+            email: email || `${name.trim()}@stella-magic.kids`, // Generate a placeholder if no email
             age: ageNum,
             gender,
             tier: "Free",
-            credits: referral ? 4 : 3,
+            credits: 5, // Give all kids 5 credits to start without needing a code
             character: selectedCharacter,
             character_name: characterName,
             created_at: new Date().toISOString()
@@ -139,20 +140,18 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
             if (error) {
                 if (error.code === '23505') {
-                    return alert("이미 있는 히어로 이름이야! 다른 이름을 골라볼까? ✨");
+                    return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
                 }
                 throw error;
             }
 
             onLogin({
                 ...data,
-                characterName: data.character_name // mapping snake_case to camelCase for existing code compatibility
+                characterName: data.character_name
             });
-
-            if (referral) alert(`🎉 친구 추천 보너스 전송 완료!`);
         } catch (err) {
             console.error("Join failed", err);
-            alert("기록장에 적는 중에 마법이 꼬였어. 다시 시도해줘! 🪄");
+            alert("친구의 이름을 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄");
         }
     };
 
@@ -367,8 +366,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                         >
                             <h1 style={{ fontSize: "1.8rem", color: "#6C5CE7", marginBottom: "1rem" }}>우리들의 모험 기록장</h1>
                             <div style={{ textAlign: "left" }}>
-                                <label style={labelStyle}>이메일 (부모님 메일)</label>
-                                <input type="email" placeholder="example@magic.com" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+                                {/* Email and Referral removed for maximum simplicity as requested by CEO */}
                                 <div style={{ display: "flex", gap: "1rem" }}>
                                     <div style={{ flex: 1 }}>
                                         <label style={labelStyle}>나이 (4-10세)</label>
@@ -391,10 +389,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                         </select>
                                     </div>
                                 </div>
-                                <div style={{ marginTop: "0.5rem", padding: "1rem", background: "#f8f9ff", borderRadius: "20px", border: "1px dashed #A29BFE", marginBottom: "1.5rem" }}>
-                                    <label style={{ ...labelStyle, color: "#6C5CE7" }}>🎁 친구 추천 코드</label>
-                                    <input type="text" placeholder="친구의 이름" value={referral} onChange={(e) => setReferral(e.target.value)} style={{ ...inputStyle, marginBottom: 0 }} />
-                                </div>
+                                {/* Referral code removed for simplicity as requested */}
 
                                 <div style={{
                                     marginTop: "1.5rem",
@@ -418,15 +413,14 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                             }}
                                         />
                                         <div style={{ flex: 1, fontSize: "0.95rem", color: "#2d3436", lineHeight: "1.6" }}>
-                                            <strong style={{ color: "#6C5CE7" }}>[필수]</strong> 부모님,
+                                            부모님! 우리 아이의 정보를 안전하게 지켜주기로 약속할게요.
                                             <a
                                                 href="/privacy"
                                                 target="_blank"
-                                                style={{ color: "#6C5CE7", textDecoration: "underline", fontWeight: "bold" }}
+                                                style={{ color: "#6C5CE7", textDecoration: "underline", fontWeight: "bold", marginLeft: "5px" }}
                                             >
-                                                개인정보 처리방침
+                                                [약속 확인하기]
                                             </a>
-                                            을 읽고 동의합니다.
                                         </div>
                                     </label>
                                 </div>
