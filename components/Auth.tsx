@@ -118,18 +118,20 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
 
-        const safeName = name.trim().replace(/\s+/g, '_');
-        const newUser = {
+        const newUser: any = {
             name: name.trim(),
-            email: email || `${safeName}@stella-magic.kids`, // Generate a placeholder if no email
             age: ageNum,
             gender,
             tier: "Free",
-            credits: 5, // Give all kids 5 credits to start without needing a code
+            credits: 5,
             character: selectedCharacter,
             character_name: characterName ? characterName.trim() : "친구",
             created_at: new Date().toISOString()
         };
+
+        if (email) {
+            newUser.email = email.trim().toLowerCase();
+        }
 
         try {
             // Save to Supabase
