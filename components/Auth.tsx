@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { handleAuthAction } from "../app/actions/auth";
+import { performMagic } from "../app/actions/magic";
 import ParentalGate from "./ParentalGate";
 import ParentalGateMath from "./ParentalGateMath";
 
@@ -81,18 +81,18 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!isAdmin) {
             try {
-                // Strategy 1: Use Next.js Server Action (Most robust against ad-blockers/shields)
-                const result = await handleAuthAction({ action: 'login', name: name.trim() });
-
-                if (result.success) {
-                    onLogin(result.data);
-                    return;
+                // Strategy 1: Server Action (Hidden from ad-blockers)
+                try {
+                    const result = await performMagic({ action: 'login', name: name.trim() });
+                    if (result.success) {
+                        onLogin(result.data);
+                        return;
+                    }
+                } catch (actionErr) {
+                    console.warn("Strategy 1 (Action) failed", actionErr);
                 }
 
-                // If Server Action failed with a network error/etc, try direct fallback
-                console.warn("Server Action failed (login), trying direct fallback", result.error);
-
-                // Strategy 2: Direct Supabase call
+                // Strategy 2: Direct Supabase fallback
                 const { data, error } = await supabase
                     .from('magic_users')
                     .select('*')
@@ -107,8 +107,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 return;
             } catch (err: any) {
                 console.error("Login failed overall", err);
-                const diagnosticInfo = `URL: ${window.location.host}, Err: ${err.message || "Unknown"}`;
-                return alert(`연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨\n(진단정보: ${diagnosticInfo})`);
+                const diag = `V1.4, H: ${window.location.host}, E: ${err.message}`;
+                return alert(`연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨\n(진단: ${diag})`);
             }
         }
 
@@ -147,17 +147,18 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         }
 
         try {
-            // Strategy 1: Use Next.js Server Action (Most robust)
-            const result = await handleAuthAction({ action: 'register', userData: newUser });
-
-            if (result.success) {
-                onLogin({ ...result.data, characterName: result.data.character_name });
-                return;
-            } else if (result.code === '23505') {
-                return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
+            // Strategy 1: Server Action
+            try {
+                const result = await performMagic({ action: 'register', userData: newUser });
+                if (result.success) {
+                    onLogin({ ...result.data, characterName: result.data.character_name });
+                    return;
+                } else if (result.code === '23505') {
+                    return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
+                }
+            } catch (actionErr) {
+                console.warn("Strategy 1 (Register Action) failed", actionErr);
             }
-
-            console.warn("Server Action failed (register), trying direct fallback", result.error);
 
             // Strategy 2: Direct Fallback
             const { data, error } = await supabase
@@ -176,8 +177,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
             onLogin({ ...data, characterName: data.character_name });
         } catch (err: any) {
             console.error("Join failed overall", err);
-            const diagnosticInfo = `URL: ${window.location.host}, Version: v1.3-action, Err: ${err.message || "Unknown"}`;
-            alert(`기록장에 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄\n(진단정보: ${diagnosticInfo})`);
+            const diag = `V1.4, H: ${window.location.host}, E: ${err.message}`;
+            alert(`기록장에 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄\n(진단: ${diag})`);
         }
     };
 
@@ -238,7 +239,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                                 position: "relative"
                             }}>
                                 👶 만 4-10세 어린이를 위한 AI 놀이터
-                                <span style={{ position: "absolute", bottom: "-15px", right: "10px", fontSize: "0.6rem", opacity: 0.5 }}>v1.3-magic-action</span>
+                                <span style={{ position: "absolute", bottom: "-15px", right: "10px", fontSize: "0.6rem", opacity: 0.5 }}>v1.4-magic-gate</span>
                             </div>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

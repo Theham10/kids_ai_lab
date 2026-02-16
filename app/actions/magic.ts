@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabase'
 
-export async function handleAuthAction(formData: { action: string; name?: string; userData?: any; userId?: string; credits?: number }) {
+export async function performMagic(formData: { action: string; name?: string; userData?: any; userId?: string; credits?: number }) {
     const { action, name, userData, userId, credits } = formData
 
     try {
