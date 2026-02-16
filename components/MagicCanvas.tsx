@@ -270,10 +270,10 @@ export default function MagicCanvas({
                                 transition={{ repeat: Infinity, duration: 2 }}
                                 style={{ marginTop: "2rem", color: "#666", fontSize: "1.2rem", fontWeight: "500" }}
                             >
-                                {status === "refining" && "Gemini 마법사가 그림의 비밀 코드를 만드는 중... 🧪"}
-                                {status === "sketching" && "구름 위 보이지 않는 캔버스에 밑그림을 그려요... ☁️"}
-                                {status === "coloring" && "무지개 끝에서 가져온 특별한 색을 입히고 있어요... 🌈"}
-                                {status === "polishing" && "마지막으로 반짝이는 요정 가루를 뿌려 완성 중! ✨"}
+                                {status === "refining" && "어떤 예쁜 그림을 그릴지 마법사가 생각 중이에요... 🧪"}
+                                {status === "sketching" && "하늘 위 스케치북에 슥슥 밑그림을 그려요... ☁️"}
+                                {status === "coloring" && "무지개 색깔로 예쁘게 색칠하고 있어요... 🌈"}
+                                {status === "polishing" && "마지막으로 반짝반짝 요정 가루를 뿌려 완성! ✨"}
                             </motion.div>
                         </div>
                     </motion.div>
@@ -312,7 +312,7 @@ export default function MagicCanvas({
 
                         <div style={{ position: "relative", zIndex: 1 }}>
                             <motion.img
-                                src="/mascot.png"
+                                src="/stella_char.png"
                                 animate={{
                                     y: [-15, 15, -15],
                                     rotate: [0, 5, -5, 0],
@@ -322,7 +322,7 @@ export default function MagicCanvas({
                                 style={{ width: "130px", height: "130px", borderRadius: "30px", marginBottom: "2rem", boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
                             />
                             <h3 style={{ color: "var(--primary)", fontWeight: "bold", fontSize: "1.8rem", marginBottom: "1.5rem" }}>
-                                스텔라가 동화 세계를 여행 중이에요... 🚀
+                                {user.name}의 멋진 그림을 그리고 있어! 🎨
                             </h3>
                             <div style={{ width: "100%", background: "#f1f2f6", height: "12px", borderRadius: "6px", overflow: "hidden", maxWidth: "400px", margin: "0 auto" }}>
                                 <motion.div

@@ -37,9 +37,11 @@ export default function AIDisclosure({
                     overflowY: "auto"
                 }}
             >
-                <div style={{ fontSize: "4rem", textAlign: "center", marginBottom: "1rem" }}>🤖✨</div>
+                <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+                    <img src="/stella_char.png" alt="Stella" style={{ width: "120px", height: "120px", borderRadius: "30px", objectFit: "cover", border: "4px solid #A29BFE" }} />
+                </div>
                 <h2 style={{ fontSize: "2rem", color: "#6C5CE7", marginBottom: "1.5rem", textAlign: "center" }}>
-                    AI 도우미가 뭐야?
+                    마법사 로봇 친구는 누구인가요?
                 </h2>
 
                 <div style={{ textAlign: "left", lineHeight: "1.8" }}>
@@ -50,11 +52,11 @@ export default function AIDisclosure({
                         marginBottom: "1.5rem",
                         border: "2px solid #A29BFE"
                     }}>
-                        <h3 style={{ color: "#6C5CE7", fontSize: "1.3rem", marginBottom: "1rem" }}>✨ AI 도우미는...</h3>
+                        <h3 style={{ color: "#6C5CE7", fontSize: "1.3rem", marginBottom: "1rem" }}>✨ 마법사 로봇은요...</h3>
                         <ul style={{ paddingLeft: "1.5rem", color: "#2d3436" }}>
-                            <li style={{ marginBottom: "0.8rem" }}>스토리를 만들 때 <strong>멋진 이야기를 도와줘요</strong></li>
-                            <li style={{ marginBottom: "0.8rem" }}>그림을 그릴 때 <strong>상상을 더 예쁘게 만들어줘요</strong></li>
-                            <li style={{ marginBottom: "0.8rem" }}>AI 친구처럼 함께 <strong>창작을 도와주는 도구</strong>예요</li>
+                            <li style={{ marginBottom: "0.8rem" }}>어려운 이야기를 <strong>재미있고 쉽게 만들어줘요</strong></li>
+                            <li style={{ marginBottom: "0.8rem" }}>내가 생각한 걸 <strong>멋진 그림으로 그려줘요</strong></li>
+                            <li style={{ marginBottom: "0.8rem" }}>나의 창작을 도와주는 <strong>똑똑한 마법 도구</strong>예요</li>
                         </ul>
                     </div>
 
@@ -65,12 +67,12 @@ export default function AIDisclosure({
                         marginBottom: "1.5rem",
                         border: "2px solid #FFAD33"
                     }}>
-                        <h3 style={{ color: "#663C00", fontSize: "1.3rem", marginBottom: "1rem" }}>🛡️ 안전하게 사용돼요</h3>
+                        <h3 style={{ color: "#663C00", fontSize: "1.3rem", marginBottom: "1rem" }}>🛡️ 걱정 마세요! 안전해요</h3>
                         <ul style={{ paddingLeft: "1.5rem", color: "#663C00" }}>
-                            <li style={{ marginBottom: "0.8rem" }}>AI는 <strong>너의 정보를 기억하거나 배우지 않아요</strong></li>
-                            <li style={{ marginBottom: "0.8rem" }}>만들어진 작품은 <strong>일회성</strong>이에요 (매번 새로워요!)</li>
-                            <li style={{ marginBottom: "0.8rem" }}>부적절한 내용은 <strong>자동으로 차단</strong>돼요</li>
-                            <li style={{ marginBottom: "0.8rem" }}>부모님이 언제든지 <strong>사용 기록을 확인</strong>하실 수 있어요</li>
+                            <li style={{ marginBottom: "0.8rem" }}>로봇은 <strong>나의 비밀을 어디에도 말하지 않아요</strong></li>
+                            <li style={{ marginBottom: "0.8rem" }}>매번 <strong>새롭고 신기한 것</strong>을 만들어줘요</li>
+                            <li style={{ marginBottom: "0.8rem" }}>나쁜 내용은 <strong>나오지 않게 막아줘요</strong></li>
+                            <li style={{ marginBottom: "0.8rem" }}>부모님이 언제든지 <strong>함께 확인</strong>하고 도와주실 거예요</li>
                         </ul>
                     </div>
 
@@ -105,7 +107,7 @@ export default function AIDisclosure({
                         fontWeight: "bold"
                     }}
                 >
-                    알겠어요! 시작할게요 🚀
+                    알겠어요! 마법 여행 시작! 🚀
                 </button>
 
                 <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.85rem", color: "#999" }}>

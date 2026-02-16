@@ -290,9 +290,9 @@ export default function AIChat({ onBack, user }: { onBack: () => void; user: any
                             width: "40px", height: "40px", borderRadius: "50%",
                             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "1.5rem"
+                            fontSize: "1.5rem", overflow: "hidden" // Added overflow hidden to contain the image
                         }}>
-                            {characterMap[user.character || "stella"]}
+                            <img src="/stella_char.png" alt="Stella" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                         <div style={{
                             padding: "1rem 1.5rem",

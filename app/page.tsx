@@ -142,9 +142,9 @@ export default function Home() {
               animate={{ x: 0, opacity: 1 }}
               style={{ display: "flex", alignItems: "center", gap: "15px" }}
             >
-              <img src="/mascot.png" alt="Mascot" style={{ width: "60px", height: "60px", borderRadius: "12px" }} />
+              <img src="/stella_char.png" alt="Mascot" style={{ width: "65px", height: "65px", borderRadius: "15px", objectFit: "cover" }} />
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.5rem", color: "#2d3436" }}>반가워, {user.name}!</h3>
+                <h3 style={{ margin: 0, fontSize: "1.5rem", color: "#2d3436" }}>{user.name}야, 반가워! 👋</h3>
                 <div style={{
                   fontSize: "0.85rem",
                   background: "linear-gradient(45deg, #FF9F43, #FF8C42)",
@@ -195,7 +195,7 @@ export default function Home() {
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               style={{
-                fontSize: "4.5rem",
+                fontSize: "4rem",
                 marginBottom: "1rem",
                 color: "#6C5CE7",
                 fontFamily: "Fredoka, sans-serif",
@@ -203,10 +203,10 @@ export default function Home() {
               }}
               className="animate-float"
             >
-              Hero Magic Lab 🚀
+              스텔라 마법 나라 ✨
             </motion.h1>
-            <p style={{ fontSize: "1.6rem", color: "#636e72" }}>
-              무한한 공간, 저 너머로! {user.name}와 {user.characterName}의 상상을 그려줄게. ✨
+            <p style={{ fontSize: "1.5rem", color: "#636e72" }}>
+              {user.name}야! 우리 같이 신비한 마법 여행을 떠나볼까? ✨
             </p>
           </header>
 
@@ -227,11 +227,11 @@ export default function Home() {
             }}
           >
             {[
-              { id: "story", icon: "📖", title: "스토리 마법", desc: "나만의 동화책 만들기.", color: "#FF8C42" },
-              { id: "draw", icon: "🎨", title: "매직 캔버스", desc: "상상하는 무엇이든 그려봐!", color: "#FF6B9D" },
-              { id: "chat", icon: "💬", title: "AI 친구와 대화하기", desc: "AI 친구와 함께 수다떨기!", color: "#9B59B6" },
-              { id: "motion", icon: "🎬", title: "매직 모션", desc: "내 그림이 움직여요!", color: "#4D96FF", pro: true },
-              { id: "hero", icon: "🦄", title: "히어로 센터", desc: "나의 정보와 마법 기록!", color: "#6BCB77" }
+              { id: "story", icon: "📖", title: "동화책 마법", desc: "나만의 멋진 이야기를 만들어요.", color: "#FF8C42" },
+              { id: "draw", icon: "🎨", title: "매직 캔버스", desc: "상상하는 무엇이든 그려볼까?", color: "#FF6B9D" },
+              { id: "chat", icon: "💬", title: "친구와 대화", desc: "AI 친구와 신나게 수다 떨기!", color: "#9B59B6" },
+              { id: "motion", icon: "🎬", title: "매직 모션", desc: "내 그림이 살아 움직여요!", color: "#4D96FF", pro: true },
+              { id: "hero", icon: "🦄", title: "내 보물함", desc: "나의 마법 일기와 보물들!", color: "#6BCB77" }
             ].map((item) => (
               <motion.div
                 key={item.id}

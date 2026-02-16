@@ -223,7 +223,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
 
                         <div style={{ position: "relative", zIndex: 1 }}>
                             <motion.img
-                                src="/mascot.png"
+                                src="/stella_char.png"
                                 animate={{
                                     y: [-15, 15, -15],
                                     rotate: [0, 5, -5, 0],
@@ -233,7 +233,7 @@ export default function StoryMagic({ onBack, user, onDecrementCredits }: { onBac
                                 style={{ width: "130px", height: "130px", borderRadius: "30px", marginBottom: "2rem", boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
                             />
                             <h3 style={{ color: "#FF8C42", fontWeight: "bold", fontSize: "1.8rem", marginBottom: "1.5rem" }}>
-                                스텔라가 동화 세계를 여행 중이에요... 🚀
+                                {user.name}만의 마법 동화책을 만들고 있어! 🚀
                             </h3>
                             <div style={{ width: "100%", background: "#f1f2f6", height: "12px", borderRadius: "6px", overflow: "hidden", maxWidth: "400px", margin: "0 auto" }}>
                                 <motion.div

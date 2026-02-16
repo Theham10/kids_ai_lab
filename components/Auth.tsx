@@ -180,8 +180,12 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                     boxShadow: "0 20px 50px rgba(108, 92, 231, 0.1)"
                 }}
             >
-                <div style={{ fontSize: "5rem", marginBottom: "1rem" }}>
-                    {mode === "landing" ? "🚀" : (characterMap[selectedCharacter] || "✨")}
+                <div style={{ marginBottom: "1rem" }}>
+                    {mode === "landing" ? (
+                        <img src="/stella_char.png" alt="Stella" style={{ width: "120px", height: "120px", borderRadius: "30px", objectFit: "cover", border: "4px solid #A29BFE", margin: "0 auto" }} />
+                    ) : (
+                        <div style={{ fontSize: "5rem" }}>{characterMap[selectedCharacter] || "✨"}</div>
+                    )}
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -192,10 +196,10 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 1.1, opacity: 0 }}
                         >
-                            <h1 style={{ fontSize: "2.5rem", color: "#6C5CE7", marginBottom: "1rem" }}>Magic Lab 🚀</h1>
+                            <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7", marginBottom: "1rem" }}>안녕! 마법 나라에 <br />온 걸 환영해 ✨</h1>
                             <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "1rem" }}>
-                                꼬마 마법사 연구소에 온 걸 환영해! <br />
-                                오늘은 어떤 마법을 부려볼까? ✨
+                                오늘은 어떤 마법을 부려볼까? <br />
+                                우리 같이 여행을 떠나보자! ✨
                             </p>
                             <div style={{
                                 background: "#f9f9ff",
@@ -239,14 +243,14 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: -20, opacity: 0 }}
                         >
-                            <h1 style={{ fontSize: "2rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>나만의 AI 친구 만들기</h1>
-                            <p style={{ color: "#666", marginBottom: "2rem" }}>함께 모험을 떠날 친구를 고르고 이름도 지어줘!</p>
+                            <h1 style={{ fontSize: "2rem", color: "#6C5CE7", marginBottom: "0.5rem" }}>나의 AI 친구를 불러볼까?</h1>
+                            <p style={{ color: "#666", marginBottom: "2rem" }}>마법사 친구와 이름을 정해줘!</p>
 
                             <div style={{ textAlign: "left" }}>
-                                <label style={labelStyle}>나의 이름으로</label>
+                                <label style={labelStyle}>내 이름은요</label>
                                 <input type="text" placeholder="예: 무적철수" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
 
-                                <label style={labelStyle}>활동에 도움 줄 AI 친구 이름 지어주기</label>
+                                <label style={labelStyle}>마법사 친구의 이름은요</label>
                                 <input
                                     type="text"
                                     placeholder="예: 반짝이, 우주대장"
@@ -309,8 +313,8 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: -20, opacity: 0 }}
                         >
-                            <h1 style={{ fontSize: "2.5rem", color: "#6C5CE7" }}>반가워, {name}!</h1>
-                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2.5rem" }}>AI 친구 **{characterName}**와 함께 무엇을 할까?</p>
+                            <h1 style={{ fontSize: "2.2rem", color: "#6C5CE7" }}>반가워, {name}야!</h1>
+                            <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2.5rem" }}>AI 친구 **{characterName}**랑 무엇을 할까?</p>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
                                 <motion.button
