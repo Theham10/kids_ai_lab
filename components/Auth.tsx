@@ -86,12 +86,13 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                     body: JSON.stringify({ action: 'login', name: name.trim() })
                 });
 
+                const text = await res.text();
                 let result;
                 try {
-                    result = await res.json();
+                    result = JSON.parse(text);
                 } catch (jsonErr) {
-                    console.error("JSON parse error on login", jsonErr);
-                    return alert("연구소에서 보내온 편지를 읽는 중에 마법이 엉켰어! 잠시 후에 다시 말해줄래? ✨");
+                    console.error("JSON parse error on login", jsonErr, text);
+                    return alert(`연구소 통신 오류 (Login JSON Error)\n답장 내용: ${text.substring(0, 50)}...`);
                 }
 
                 if (!res.ok) {
@@ -148,12 +149,13 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 body: JSON.stringify({ action: 'register', userData: newUser })
             });
 
+            const text = await res.text();
             let result;
             try {
-                result = await res.json();
+                result = JSON.parse(text);
             } catch (jsonErr) {
-                console.error("JSON parse error on join", jsonErr);
-                return alert("기본 정보를 저장하는 중에 마법이 꼬였어! (서버 응답 오류)\n페이지를 새로고침하고 다시 한번만 시도해줘! 🪄");
+                console.error("JSON parse error on join", jsonErr, text);
+                return alert(`연구소 서버 응답 오류 (Register JSON Error)\n내용: ${text.substring(0, 100)}...`);
             }
 
             if (!res.ok) {
