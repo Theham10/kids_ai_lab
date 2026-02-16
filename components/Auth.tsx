@@ -80,7 +80,26 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!isAdmin) {
             try {
-                // Return to direct Supabase call for maximum stability in current environment
+                // Try API Proxy first to bypass ad-blockers, with Fallback to direct if proxy fails to fetch
+                const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/auth`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'login', name: name.trim() })
+                    });
+
+                    if (res.ok) {
+                        const result = await res.json();
+                        onLogin(result.data);
+                        return;
+                    }
+                } catch (proxyErr) {
+                    console.warn("API Proxy failed (login), attempting direct fallback", proxyErr);
+                }
+
+                // Fallback: Direct Supabase call
                 const { data, error } = await supabase
                     .from('magic_users')
                     .select('*')
@@ -94,7 +113,7 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 onLogin(data);
                 return;
             } catch (err: any) {
-                console.error("Login failed", err);
+                console.error("Login failed overall", err);
                 return alert("연구소 통신에 문제가 생겼어. 잠시 후에 다시 해볼까? ✨");
             }
         }
@@ -134,7 +153,34 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         }
 
         try {
-            // Return to direct Supabase call for maximum stability
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+            let success = false;
+
+            // Strategy 1: Attempt via API Proxy (Bypasses AdBlockers)
+            try {
+                const res = await fetch(`${API_BASE}/api/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'register', userData: newUser })
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    onLogin({ ...result.data, characterName: result.data.character_name });
+                    success = true;
+                } else if (res.status === 400) {
+                    const errorData = await res.json();
+                    if (errorData.code === '23505') {
+                        return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
+                    }
+                }
+            } catch (proxyErr) {
+                console.warn("API Proxy failed (register), attempting direct fallback", proxyErr);
+            }
+
+            if (success) return;
+
+            // Strategy 2: Direct Fallback (If proxy fails/not-found)
             const { data, error } = await supabase
                 .from('magic_users')
                 .insert([newUser])
@@ -148,12 +194,9 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 throw error;
             }
 
-            onLogin({
-                ...data,
-                characterName: data.character_name
-            });
+            onLogin({ ...data, characterName: data.character_name });
         } catch (err: any) {
-            console.error("Join failed", err);
+            console.error("Join failed overall", err);
             const errorMsg = err.message || "알 수 없는 마법 오류";
             alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
         }
