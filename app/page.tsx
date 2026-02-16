@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
-import { handleAuthAction } from "./actions/auth";
+import { performMagic } from "./actions/magic";
 import StoryMagic from "../components/StoryMagic";
 import MagicCanvas from "../components/MagicCanvas";
 import MagicMotion from "../components/MagicMotion";
@@ -30,7 +30,7 @@ export default function Home() {
         // Refresh data from Supabase for production consistency
         // Refresh data via Server Action for maximum reliability
         if (parsed.id && !parsed.id.startsWith('admin')) {
-          handleAuthAction({ action: 'recover', userId: parsed.id })
+          performMagic({ action: 'recover', userId: parsed.id })
             .then(result => {
               if (result.success && result.data) {
                 const updated = { ...result.data, characterName: result.data.character_name };
@@ -103,7 +103,7 @@ export default function Home() {
       // Persist to Supabase
       // Persist via Server Action
       if (user.id && !user.id.startsWith('admin')) {
-        handleAuthAction({ action: 'update-credits', userId: user.id, credits: newCredits })
+        performMagic({ action: 'update-credits', userId: user.id, credits: newCredits })
           .then(result => {
             if (!result.success) throw new Error(result.error);
           })
