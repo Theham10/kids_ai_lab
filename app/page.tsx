@@ -52,11 +52,8 @@ export default function Home() {
     }
     setMounted(true);
 
-    // Show AI Disclosure on first run
-    const hasSeenDisclosure = localStorage.getItem("magic_ai_disclosure_seen");
-    if (!hasSeenDisclosure) {
-      setShowAIDisclosure(true);
-    }
+    // Show AI Disclosure every time app starts as requested
+    setShowAIDisclosure(true);
   }, []);
 
   useEffect(() => {
@@ -73,19 +70,18 @@ export default function Home() {
 
   if (!mounted) return null;
 
+  if (showAIDisclosure) {
+    return (
+      <main>
+        <AIDisclosure onClose={() => setShowAIDisclosure(false)} />
+      </main>
+    );
+  }
+
   if (!user) {
     return (
       <main>
-        {showAIDisclosure ? (
-          <AIDisclosure
-            onClose={() => {
-              setShowAIDisclosure(false);
-              localStorage.setItem("magic_ai_disclosure_seen", "true");
-            }}
-          />
-        ) : (
-          <Auth onLogin={(newUser) => setUser(newUser)} />
-        )}
+        <Auth onLogin={(newUser) => setUser(newUser)} />
       </main>
     );
   }
