@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "../lib/supabase";
 import ParentalGate from "./ParentalGate";
 import ParentalGateMath from "./ParentalGateMath";
 
@@ -79,27 +80,18 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!isAdmin) {
             try {
-                // Call Internal API instead of direct Supabase to bypass ad-blockers
-                const res = await fetch('/api/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'login', name: name.trim() })
-                });
+                // Return to direct Supabase call for maximum stability in current environment
+                const { data, error } = await supabase
+                    .from('magic_users')
+                    .select('*')
+                    .eq('name', name.trim())
+                    .single();
 
-                const text = await res.text();
-                let result;
-                try {
-                    result = JSON.parse(text);
-                } catch (jsonErr) {
-                    console.error("JSON parse error on login", jsonErr, text);
-                    return alert(`연구소 통신 오류 (Login JSON Error)\n답장 내용: ${text.substring(0, 50)}...`);
-                }
-
-                if (!res.ok) {
+                if (error || !data) {
                     return alert("어라? 기록장에서 이름을 찾을 수 없어. 처음 왔다면 가입을 먼저 해볼까? ✨");
                 }
 
-                onLogin(result.data);
+                onLogin(data);
                 return;
             } catch (err: any) {
                 console.error("Login failed", err);
@@ -142,32 +134,23 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
         }
 
         try {
-            // Call Internal API to bypass ad-blockers
-            const res = await fetch('/api/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'register', userData: newUser })
-            });
+            // Return to direct Supabase call for maximum stability
+            const { data, error } = await supabase
+                .from('magic_users')
+                .insert([newUser])
+                .select()
+                .single();
 
-            const text = await res.text();
-            let result;
-            try {
-                result = JSON.parse(text);
-            } catch (jsonErr) {
-                console.error("JSON parse error on join", jsonErr, text);
-                return alert(`연구소 서버 응답 오류 (Register JSON Error)\n내용: ${text.substring(0, 100)}...`);
-            }
-
-            if (!res.ok) {
-                if (result.code === '23505') {
+            if (error) {
+                if (error.code === '23505') {
                     return alert("이미 우리 연구소에 있는 이름이야! 뒤로 가서 '입장하기'를 하거나, 다른 예쁜 이름을 써볼까? ✨");
                 }
-                throw new Error(result.error || "알 수 없는 오류");
+                throw error;
             }
 
             onLogin({
-                ...result.data,
-                characterName: result.data.character_name
+                ...data,
+                characterName: data.character_name
             });
         } catch (err: any) {
             console.error("Join failed", err);
