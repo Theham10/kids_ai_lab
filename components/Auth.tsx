@@ -86,7 +86,13 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                     body: JSON.stringify({ action: 'login', name: name.trim() })
                 });
 
-                const result = await res.json();
+                let result;
+                try {
+                    result = await res.json();
+                } catch (jsonErr) {
+                    console.error("JSON parse error on login", jsonErr);
+                    return alert("연구소에서 보내온 편지를 읽는 중에 마법이 엉켰어! 잠시 후에 다시 말해줄래? ✨");
+                }
 
                 if (!res.ok) {
                     return alert("어라? 기록장에서 이름을 찾을 수 없어. 처음 왔다면 가입을 먼저 해볼까? ✨");
@@ -142,7 +148,13 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 body: JSON.stringify({ action: 'register', userData: newUser })
             });
 
-            const result = await res.json();
+            let result;
+            try {
+                result = await res.json();
+            } catch (jsonErr) {
+                console.error("JSON parse error on join", jsonErr);
+                return alert("기본 정보를 저장하는 중에 마법이 꼬였어! (서버 응답 오류)\n페이지를 새로고침하고 다시 한번만 시도해줘! 🪄");
+            }
 
             if (!res.ok) {
                 if (result.code === '23505') {
