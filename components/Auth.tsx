@@ -118,15 +118,16 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
 
         if (!privacyConsent) return alert("부모님의 동의가 필요해요! 개인정보 처리방침에 체크해주세요 🙏");
 
+        const safeName = name.trim().replace(/\s+/g, '_');
         const newUser = {
             name: name.trim(),
-            email: email || `${name.trim()}@stella-magic.kids`, // Generate a placeholder if no email
+            email: email || `${safeName}@stella-magic.kids`, // Generate a placeholder if no email
             age: ageNum,
             gender,
             tier: "Free",
             credits: 5, // Give all kids 5 credits to start without needing a code
             character: selectedCharacter,
-            character_name: characterName,
+            character_name: characterName ? characterName.trim() : "친구",
             created_at: new Date().toISOString()
         };
 
@@ -149,9 +150,11 @@ export default function Auth({ onLogin }: { onLogin: (user: UserProfile) => void
                 ...data,
                 characterName: data.character_name
             });
-        } catch (err) {
+        } catch (err: any) {
             console.error("Join failed", err);
-            alert("친구의 이름을 적는 중에 마법이 꼬였어. 다시 한번만 시도해줘! 🪄");
+            // Provide a bit more info to the user/parent
+            const errorMsg = err.message || "알 수 없는 마법 오류";
+            alert(`기록장에 적는 중에 마법이 꼬였어 (오류: ${errorMsg}). 다시 한번만 시도해줘! 🪄`);
         }
     };
 
